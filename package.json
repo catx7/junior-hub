@@ -1,0 +1,54 @@
+{
+  "name": "localservices",
+  "version": "1.0.0",
+  "private": true,
+  "description": "LocalServices - Marketplace for local service providers",
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=@localservices/web",
+    "dev:mobile": "turbo dev --filter=@localservices/mobile",
+    "build": "turbo build",
+    "build:web": "turbo build --filter=@localservices/web",
+    "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "test:coverage": "turbo test:coverage",
+    "clean": "turbo clean && rm -rf node_modules",
+    "db:generate": "pnpm --filter @localservices/database db:generate",
+    "db:migrate": "pnpm --filter @localservices/database db:migrate",
+    "db:migrate:dev": "pnpm --filter @localservices/database db:migrate:dev",
+    "db:push": "pnpm --filter @localservices/database db:push",
+    "db:studio": "pnpm --filter @localservices/database db:studio",
+    "db:seed": "pnpm --filter @localservices/database db:seed",
+    "db:reset": "pnpm --filter @localservices/database db:reset",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "@types/node": "^20.11.0",
+    "husky": "^9.0.0",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.2.0",
+    "prettier-plugin-tailwindcss": "^0.5.11",
+    "turbo": "^2.0.0",
+    "typescript": "^5.3.0"
+  },
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}
