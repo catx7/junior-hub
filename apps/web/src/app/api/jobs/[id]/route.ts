@@ -10,10 +10,7 @@ import {
   serverErrorResponse,
 } from '@/lib/auth-middleware';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const job = await prisma.job.findUnique({
       where: { id: params.id },
@@ -48,7 +45,7 @@ export async function GET(
           },
         },
         _count: {
-          select: { offers: true },
+          select: { offers: true, bookingRequests: true },
         },
       },
     });
@@ -61,6 +58,7 @@ export async function GET(
       ...job,
       budget: Number(job.budget),
       offerCount: job._count.offers,
+      bookingRequestCount: job._count.bookingRequests,
       isPromoted: !!job.promotion,
       _count: undefined,
       promotion: undefined,
@@ -71,10 +69,7 @@ export async function GET(
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authUser = await authenticate(request);
     if (!authUser) {
@@ -140,10 +135,7 @@ export async function PATCH(
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const authUser = await authenticate(request);
     if (!authUser) {

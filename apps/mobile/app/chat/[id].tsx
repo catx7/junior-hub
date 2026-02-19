@@ -49,7 +49,8 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: 'Hi! I saw your job posting for a babysitter. I have 5 years of experience and am CPR certified.',
+      content:
+        'Hi! I saw your job posting for a babysitter. I have 5 years of experience and am CPR certified.',
       senderId: 'u2',
       createdAt: new Date(Date.now() - 3600000),
       isRead: true,
@@ -63,14 +64,16 @@ export default function ChatScreen() {
     },
     {
       id: '3',
-      content: 'I am available this Saturday from 6 PM onwards. I can also provide references if you would like.',
+      content:
+        'I am available this Saturday from 6 PM onwards. I can also provide references if you would like.',
       senderId: 'u2',
       createdAt: new Date(Date.now() - 2400000),
       isRead: true,
     },
     {
       id: '4',
-      content: 'Perfect! Saturday works for me. The job is for about 5 hours. Would $75 work for you?',
+      content:
+        'Perfect! Saturday works for me. The job is for about 5 hours. Would $75 work for you?',
       senderId: currentUserId,
       createdAt: new Date(Date.now() - 1800000),
       isRead: true,
@@ -113,8 +116,8 @@ export default function ChatScreen() {
       <View style={[styles.messageRow, isOwn && styles.messageRowOwn]}>
         {!isOwn && (
           <View style={styles.avatarSpace}>
-            {showAvatar && (
-              conversation.otherUser.avatar ? (
+            {showAvatar &&
+              (conversation.otherUser.avatar ? (
                 <Image
                   source={{ uri: conversation.otherUser.avatar }}
                   style={styles.messageAvatar}
@@ -125,14 +128,16 @@ export default function ChatScreen() {
                     {conversation.otherUser.name.charAt(0)}
                   </Text>
                 </View>
-              )
-            )}
+              ))}
           </View>
         )}
-        <View style={[styles.messageBubble, isOwn ? styles.messageBubbleOwn : styles.messageBubbleOther]}>
-          <Text style={[styles.messageText, isOwn && styles.messageTextOwn]}>
-            {item.content}
-          </Text>
+        <View
+          style={[
+            styles.messageBubble,
+            isOwn ? styles.messageBubbleOwn : styles.messageBubbleOther,
+          ]}
+        >
+          <Text style={[styles.messageText, isOwn && styles.messageTextOwn]}>{item.content}</Text>
           <Text style={[styles.messageTime, isOwn && styles.messageTimeOwn]}>
             {formatTime(item.createdAt)}
           </Text>

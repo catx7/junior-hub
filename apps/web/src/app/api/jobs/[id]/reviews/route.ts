@@ -8,10 +8,7 @@ const createReviewSchema = z.object({
   comment: z.string().min(10).max(1000),
 });
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await verifyAuthToken(request);
     if (!user) {
@@ -34,10 +31,7 @@ export async function POST(
 
     // Check if job is completed
     if (job.status !== 'COMPLETED') {
-      return NextResponse.json(
-        { error: 'Can only review completed jobs' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Can only review completed jobs' }, { status: 400 });
     }
 
     // Determine who is being reviewed
@@ -45,29 +39,20 @@ export async function POST(
     const isJobProvider = job.providerId === user.id;
 
     if (!isJobPoster && !isJobProvider) {
-      return NextResponse.json(
-        { error: 'You are not part of this job' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'You are not part of this job' }, { status: 403 });
     }
 
     // Check if user already reviewed this job
-    const existingReview = job.reviews.find(r => r.authorId === user.id);
+    const existingReview = job.reviews.find((r) => r.authorId === user.id);
     if (existingReview) {
-      return NextResponse.json(
-        { error: 'You have already reviewed this job' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'You have already reviewed this job' }, { status: 400 });
     }
 
     // Determine target user (the other party)
     const targetId = isJobPoster ? job.providerId : job.posterId;
 
     if (!targetId) {
-      return NextResponse.json(
-        { error: 'No provider assigned to this job' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No provider assigned to this job' }, { status: 400 });
     }
 
     // Create review and update target user's rating
@@ -93,8 +78,7 @@ export async function POST(
         where: { targetId },
       });
 
-      const avgRating =
-        targetReviews.reduce((sum, r) => sum + r.rating, 0) / targetReviews.length;
+      const avgRating = targetReviews.reduce((sum, r) => sum + r.rating, 0) / targetReviews.length;
 
       // Update target user's rating
       await tx.user.update({
@@ -125,17 +109,11 @@ export async function POST(
       return NextResponse.json({ errors: error.errors }, { status: 400 });
     }
     console.error('Create review error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const jobId = params.id;
 
@@ -155,9 +133,6 @@ export async function GET(
     return NextResponse.json(reviews);
   } catch (error) {
     console.error('Get reviews error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

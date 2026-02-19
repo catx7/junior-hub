@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@localservices/database';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const userId = params.id;
 
@@ -15,7 +12,7 @@ export async function GET(
         name: true,
         avatar: true,
         bio: true,
-        location: true,
+        address: true,
         rating: true,
         reviewCount: true,
         isVerified: true,
@@ -23,9 +20,7 @@ export async function GET(
         _count: {
           select: {
             jobsPosted: true,
-            jobsAccepted: {
-              where: { status: 'COMPLETED' },
-            },
+            jobsAccepted: true,
           },
         },
       },
@@ -41,7 +36,7 @@ export async function GET(
       name: user.name,
       avatar: user.avatar,
       bio: user.bio,
-      location: user.location,
+      location: user.address,
       rating: user.rating,
       reviewCount: user.reviewCount,
       isVerified: user.isVerified,
@@ -53,9 +48,6 @@ export async function GET(
     return NextResponse.json(response);
   } catch (error) {
     console.error('Get user error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

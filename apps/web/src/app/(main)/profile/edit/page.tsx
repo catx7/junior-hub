@@ -1,91 +1,142 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Camera, MapPin, Save, ArrowLeft } from 'lucide-react';
+import { Camera, Save, ArrowLeft } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/use-auth';
+import { usersApi } from '@/lib/api';
+import { updateProfileSchema, type UpdateProfileInput } from '@localservices/shared';
+import { useTranslation } from '@/hooks/use-translation';
+import { LocationPicker } from '@/components/ui/location-picker';
 
 export default function EditProfilePage() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
+  const { user, isLoading } = useAuth();
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const { t } = useTranslation();
 
-  // Mock user data - replace with actual auth state
-  const [formData, setFormData] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    phone: '+1 234 567 8900',
-    bio: 'Reliable and experienced service provider. Always on time and ready to help!',
-    location: 'Manhattan, NY',
-    avatar: null as string | null,
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors, isDirty },
+  } = useForm<UpdateProfileInput>({
+    resolver: zodResolver(updateProfileSchema),
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  // Initialize form with user data
+  useEffect(() => {
+    if (user) {
+      reset({
+        name: user.name || '',
+        phone: user.phone || '',
+        bio: user.bio || '',
+        address: user.address || '',
+      });
+      setAvatarPreview(user.avatar || null);
+    }
+  }, [user, reset]);
+
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: UpdateProfileInput) => usersApi.updateMe(data),
+    onSuccess: (updatedUser) => {
+      toast.success(t('profile.profileUpdated'));
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      router.push('/profile');
+    },
+    onError: (error: any) => {
+      console.error('Profile update error:', error);
+      toast.error(error.message || t('errors.serverError'));
+    },
+  });
+
+  const onSubmit = (data: UpdateProfileInput) => {
+    // Remove empty/null fields
+    const cleanData = Object.fromEntries(
+      Object.entries(data).filter(
+        ([_, value]) => value !== '' && value !== null && value !== undefined
+      )
+    ) as UpdateProfileInput;
+
+    updateProfileMutation.mutate(cleanData);
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error(t('profile.imageTooLarge'));
+        return;
+      }
       const url = URL.createObjectURL(file);
-      setFormData((prev) => ({ ...prev, avatar: url }));
+      setAvatarPreview(url);
+      // TODO: Implement avatar upload to Cloudinary
+      toast.info(t('profile.avatarUploadSoon'));
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="border-border border-t-primary mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4"></div>
+          <p className="text-muted-foreground">{t('common.loading')}</p>
+        </div>
+      </div>
+    );
+  }
 
-    try {
-      // TODO: Implement actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      alert('Profile updated successfully!');
-      router.push('/profile');
-    } catch (error) {
-      alert('Failed to update profile. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  if (!user) {
+    router.push('/login');
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-2xl mx-auto px-4">
-        <div className="flex items-center gap-4 mb-6">
+    <div className="bg-muted/50 min-h-screen py-8">
+      <div className="mx-auto max-w-2xl px-4">
+        <div className="mb-6 flex items-center gap-4">
           <button
             onClick={() => router.back()}
-            className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition"
+            className="hover:bg-muted flex h-10 w-10 items-center justify-center rounded-full transition"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="h-5 w-5" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Edit Profile</h1>
-            <p className="text-gray-600">Update your personal information</p>
+            <h1 className="text-foreground text-2xl font-bold">{t('profile.editProfile')}</h1>
+            <p className="text-muted-foreground">{t('profile.updateInfo')}</p>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(onSubmit)}>
           {/* Avatar */}
-          <Card className="p-6 mb-6">
-            <Label className="mb-4 block">Profile Photo</Label>
+          <Card className="mb-6 p-6">
+            <Label className="mb-4 block">{t('profile.profilePhoto')}</Label>
             <div className="flex items-center gap-6">
               <div className="relative">
-                <Avatar className="w-24 h-24">
-                  {formData.avatar ? (
-                    <Image src={formData.avatar} alt="Profile" fill />
+                <Avatar className="h-24 w-24">
+                  {avatarPreview ? (
+                    <Image src={avatarPreview} alt="Profile" fill />
                   ) : (
-                    <div className="w-full h-full bg-primary flex items-center justify-center text-white text-2xl font-bold">
-                      {formData.name.charAt(0)}
+                    <div className="bg-primary flex h-full w-full items-center justify-center text-2xl font-bold text-white">
+                      {user.name?.charAt(0) || 'U'}
                     </div>
                   )}
                 </Avatar>
-                <label className="absolute bottom-0 right-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center cursor-pointer hover:bg-primary/90 transition">
-                  <Camera className="w-4 h-4 text-white" />
+                <label className="bg-primary hover:bg-primary/90 absolute bottom-0 right-0 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full transition">
+                  <Camera className="h-4 w-4 text-white" />
                   <input
                     type="file"
                     accept="image/*"
@@ -94,84 +145,76 @@ export default function EditProfilePage() {
                   />
                 </label>
               </div>
-              <div className="text-sm text-gray-500">
-                <p>Upload a new profile photo</p>
-                <p>JPG, PNG or GIF. Max 5MB.</p>
+              <div className="text-muted-foreground text-sm">
+                <p>{t('profile.uploadNewPhoto')}</p>
+                <p>{t('profile.photoFormats')}</p>
               </div>
             </div>
           </Card>
 
           {/* Basic Info */}
-          <Card className="p-6 mb-6 space-y-6">
+          <Card className="mb-6 space-y-6 p-6">
             <div>
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="mt-2"
-              />
+              <Label htmlFor="name">{t('profile.fullName')}</Label>
+              <Input id="name" {...register('name')} className="mt-2" error={!!errors.name} />
+              {errors.name && (
+                <p className="text-destructive mt-1 text-sm">{errors.name.message}</p>
+              )}
             </div>
 
             <div>
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="mt-2"
-                disabled
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Email cannot be changed. Contact support if needed.
-              </p>
+              <Label htmlFor="email">{t('profile.emailAddress')}</Label>
+              <Input id="email" type="email" value={user.email} className="mt-2" disabled />
+              <p className="text-muted-foreground mt-1 text-xs">{t('profile.emailCannotChange')}</p>
             </div>
 
             <div>
-              <Label htmlFor="phone">Phone Number</Label>
+              <Label htmlFor="phone">{t('profile.phoneNumber')}</Label>
               <Input
                 id="phone"
-                name="phone"
                 type="tel"
-                value={formData.phone}
-                onChange={handleChange}
+                {...register('phone')}
                 className="mt-2"
+                placeholder={t('profile.phonePlaceholder')}
+                error={!!errors.phone}
               />
+              {errors.phone && (
+                <p className="text-destructive mt-1 text-sm">{errors.phone.message}</p>
+              )}
             </div>
 
             <div>
-              <Label htmlFor="location">Location</Label>
-              <div className="relative mt-2">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  id="location"
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  className="pl-10"
-                  placeholder="City, State"
+              <Label htmlFor="address">{t('profile.address')}</Label>
+              <div className="mt-2">
+                <LocationPicker
+                  value={watch('address') || ''}
+                  onChange={(address) => setValue('address', address, { shouldDirty: true })}
+                  onCoordinatesChange={(lat, lng) => {
+                    setValue('latitude', lat, { shouldDirty: true });
+                    setValue('longitude', lng, { shouldDirty: true });
+                  }}
+                  defaultLat={watch('latitude') || undefined}
+                  defaultLng={watch('longitude') || undefined}
+                  placeholder={t('profile.addressPlaceholder')}
+                  error={!!errors.address}
                 />
               </div>
+              {errors.address && (
+                <p className="text-destructive mt-1 text-sm">{errors.address.message}</p>
+              )}
             </div>
 
             <div>
-              <Label htmlFor="bio">Bio</Label>
+              <Label htmlFor="bio">{t('profile.bioLabel')}</Label>
               <textarea
                 id="bio"
-                name="bio"
-                value={formData.bio}
-                onChange={handleChange}
+                {...register('bio')}
                 rows={4}
                 maxLength={500}
-                className="mt-2 w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none"
-                placeholder="Tell others about yourself..."
+                className="focus:ring-primary mt-2 w-full resize-none rounded-lg border px-4 py-3 focus:border-transparent focus:ring-2"
+                placeholder={t('profile.bioPlaceholder')}
               />
-              <p className="text-xs text-gray-500 mt-1 text-right">
-                {formData.bio.length}/500
-              </p>
+              {errors.bio && <p className="text-destructive mt-1 text-sm">{errors.bio.message}</p>}
             </div>
           </Card>
 
@@ -182,12 +225,17 @@ export default function EditProfilePage() {
               variant="outline"
               className="flex-1"
               onClick={() => router.back()}
+              disabled={updateProfileMutation.isPending}
             >
-              Cancel
+              {t('common.cancel')}
             </Button>
-            <Button type="submit" className="flex-1" disabled={isSubmitting}>
-              <Save className="w-4 h-4 mr-2" />
-              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={!isDirty || updateProfileMutation.isPending}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              {updateProfileMutation.isPending ? t('profile.saving') : t('profile.saveChanges')}
             </Button>
           </div>
         </form>

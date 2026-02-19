@@ -1,12 +1,5 @@
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-} from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { Link, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import {
@@ -44,21 +37,17 @@ export default function ProfileScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => {
-            // TODO: Implement actual logout
-            router.replace('/login');
-          }
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Logout',
+        style: 'destructive',
+        onPress: () => {
+          // TODO: Implement actual logout
+          router.replace('/login');
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const menuItems = [
@@ -127,7 +116,9 @@ export default function ProfileScreen() {
         </View>
 
         {user.bio && (
-          <Text style={styles.bio} numberOfLines={2}>{user.bio}</Text>
+          <Text style={styles.bio} numberOfLines={2}>
+            {user.bio}
+          </Text>
         )}
 
         <View style={styles.infoRow}>
@@ -191,7 +182,7 @@ export default function ProfileScreen() {
       </TouchableOpacity>
 
       <View style={styles.footer}>
-        <Text style={styles.versionText}>LocalServices v1.0.0</Text>
+        <Text style={styles.versionText}>JuniorHub v1.0.0</Text>
       </View>
     </ScrollView>
   );

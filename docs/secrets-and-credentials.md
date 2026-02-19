@@ -20,13 +20,13 @@ This guide walks you through obtaining and configuring all required credentials 
 
 ### Required Credentials by Environment
 
-| Service | Local Dev | Staging | Production |
-|---------|-----------|---------|------------|
-| PostgreSQL | Docker (local) | Supabase | Supabase/AWS RDS |
-| Firebase Auth | Required | Required | Required |
-| Cloudinary | Optional | Required | Required |
-| Vercel | Not needed | Required | Required |
-| Expo/EAS | Optional | Required | Required |
+| Service       | Local Dev      | Staging  | Production       |
+| ------------- | -------------- | -------- | ---------------- |
+| PostgreSQL    | Docker (local) | Supabase | Supabase/AWS RDS |
+| Firebase Auth | Required       | Required | Required         |
+| Cloudinary    | Optional       | Required | Required         |
+| Vercel        | Not needed     | Required | Required         |
+| Expo/EAS      | Optional       | Required | Required         |
 
 ### Security Best Practices
 
@@ -95,17 +95,20 @@ Firebase provides authentication and push notifications.
 3. Enable sign-in providers:
 
 **Email/Password:**
+
 1. Click "Email/Password"
 2. Enable "Email/Password"
 3. Click "Save"
 
 **Google:**
+
 1. Click "Google"
 2. Enable it
 3. Add support email
 4. Click "Save"
 
 **Facebook:**
+
 1. Click "Facebook"
 2. Enable it
 3. Enter App ID and App Secret (from Facebook Developer Console)
@@ -122,12 +125,12 @@ Firebase provides authentication and push notifications.
 
 ```javascript
 const firebaseConfig = {
-  apiKey: "...",           // NEXT_PUBLIC_FIREBASE_API_KEY
-  authDomain: "...",       // NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-  projectId: "...",        // NEXT_PUBLIC_FIREBASE_PROJECT_ID
-  storageBucket: "...",    // NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-  messagingSenderId: "...", // NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-  appId: "..."             // NEXT_PUBLIC_FIREBASE_APP_ID
+  apiKey: '...', // NEXT_PUBLIC_FIREBASE_API_KEY
+  authDomain: '...', // NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+  projectId: '...', // NEXT_PUBLIC_FIREBASE_PROJECT_ID
+  storageBucket: '...', // NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+  messagingSenderId: '...', // NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+  appId: '...', // NEXT_PUBLIC_FIREBASE_APP_ID
 };
 ```
 
@@ -140,13 +143,14 @@ const firebaseConfig = {
 
 ```json
 {
-  "project_id": "...",     // FIREBASE_ADMIN_PROJECT_ID
-  "private_key": "...",    // FIREBASE_ADMIN_PRIVATE_KEY
-  "client_email": "..."    // FIREBASE_ADMIN_CLIENT_EMAIL
+  "project_id": "...", // FIREBASE_ADMIN_PROJECT_ID
+  "private_key": "...", // FIREBASE_ADMIN_PRIVATE_KEY
+  "client_email": "..." // FIREBASE_ADMIN_CLIENT_EMAIL
 }
 ```
 
 **Important:** The private key contains `\n` characters. Keep them as-is in your `.env.local`:
+
 ```env
 FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBg...\n-----END PRIVATE KEY-----\n"
 ```
@@ -260,6 +264,7 @@ VERCEL_ORG_ID="team_xxxxxxxxx"
 ### Step 3: Configure Environment Variables
 
 In Vercel Dashboard:
+
 1. Go to Project Settings > Environment Variables
 2. Add all production environment variables
 3. Set appropriate environments (Production, Preview, Development)
@@ -310,16 +315,16 @@ Add these secrets to your GitHub repository for CI/CD.
 
 ### Go to Repository Settings > Secrets
 
-| Secret Name | Description | Where to Get |
-|-------------|-------------|--------------|
-| `VERCEL_TOKEN` | Vercel deployment token | Vercel Account Settings |
-| `VERCEL_ORG_ID` | Vercel organization ID | Vercel Project Settings |
-| `VERCEL_PROJECT_ID` | Vercel project ID | Vercel Project Settings |
-| `EXPO_TOKEN` | Expo access token | Expo Account Settings |
-| `DATABASE_URL` | Production database URL | Supabase Dashboard |
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | Firebase web API key | Firebase Console |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase auth domain | Firebase Console |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Firebase project ID | Firebase Console |
+| Secret Name                        | Description             | Where to Get            |
+| ---------------------------------- | ----------------------- | ----------------------- |
+| `VERCEL_TOKEN`                     | Vercel deployment token | Vercel Account Settings |
+| `VERCEL_ORG_ID`                    | Vercel organization ID  | Vercel Project Settings |
+| `VERCEL_PROJECT_ID`                | Vercel project ID       | Vercel Project Settings |
+| `EXPO_TOKEN`                       | Expo access token       | Expo Account Settings   |
+| `DATABASE_URL`                     | Production database URL | Supabase Dashboard      |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`     | Firebase web API key    | Firebase Console        |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Firebase auth domain    | Firebase Console        |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID`  | Firebase project ID     | Firebase Console        |
 
 ### Adding Secrets
 
@@ -376,22 +381,27 @@ Add all variables from `.env.example` with production values.
 ## Troubleshooting
 
 ### "Firebase: Error (auth/invalid-api-key)"
+
 - Verify `NEXT_PUBLIC_FIREBASE_API_KEY` is correct
 - Check Firebase project is active
 
 ### "Prisma: Can't reach database server"
+
 - Verify `DATABASE_URL` is correct
 - Check database is running (`docker-compose ps`)
 - Verify network access (Supabase may need IP whitelisting)
 
 ### "Cloudinary: Invalid API credentials"
+
 - Verify cloud name, API key, and secret
 - Check for typos
 
 ### "Vercel: Unauthorized"
+
 - Regenerate Vercel token
 - Verify org and project IDs
 
 ### "EAS: Not authenticated"
+
 - Run `eas login` again
 - Regenerate Expo token

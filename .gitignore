@@ -39,6 +39,7 @@ coverage
 # Prisma
 packages/database/prisma/*.db
 packages/database/prisma/*.db-journal
+.prisma/
 
 # Mobile
 *.jks
@@ -66,3 +67,4 @@ expo-env.d.ts
 *.pid.lock
 .cache
 .parcel-cache
+.vercel

@@ -18,10 +18,7 @@ class ApiError extends Error {
   }
 }
 
-async function fetchWithAuth(
-  endpoint: string,
-  options: FetchOptions = {}
-): Promise<Response> {
+async function fetchWithAuth(endpoint: string, options: FetchOptions = {}): Promise<Response> {
   const { skipAuth = false, headers: customHeaders, ...restOptions } = options;
 
   const headers: HeadersInit = {
@@ -60,7 +57,6 @@ export const authApi = {
     const res = await fetchWithAuth('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
-      skipAuth: true,
     });
     return res.json();
   },
@@ -70,6 +66,13 @@ export const authApi = {
       method: 'POST',
       body: JSON.stringify(data),
       skipAuth: true,
+    });
+    return res.json();
+  },
+
+  email: async () => {
+    const res = await fetchWithAuth('/api/auth/email', {
+      method: 'POST',
     });
     return res.json();
   },
@@ -101,10 +104,9 @@ export const usersApi = {
   },
 
   getReviews: async (id: string, page = 1, limit = 10) => {
-    const res = await fetchWithAuth(
-      `/api/users/${id}/reviews?page=${page}&limit=${limit}`,
-      { skipAuth: true }
-    );
+    const res = await fetchWithAuth(`/api/users/${id}/reviews?page=${page}&limit=${limit}`, {
+      skipAuth: true,
+    });
     return res.json();
   },
 };
@@ -189,6 +191,20 @@ export const jobsApi = {
 
 // Offers API
 export const offersApi = {
+  listMine: async (params?: { page?: number; limit?: number; status?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const query = searchParams.toString();
+    const res = await fetchWithAuth(`/api/offers${query ? `?${query}` : ''}`);
+    return res.json();
+  },
+
   listForJob: async (jobId: string) => {
     const res = await fetchWithAuth(`/api/jobs/${jobId}/offers`);
     return res.json();
@@ -253,6 +269,30 @@ export const conversationsApi = {
     const res = await fetchWithAuth(`/api/conversations/${id}/messages`, {
       method: 'POST',
       body: JSON.stringify({ content, imageUrl }),
+    });
+    return res.json();
+  },
+};
+
+// Verification API
+export const verificationApi = {
+  getStatus: async () => {
+    const res = await fetchWithAuth('/api/verification/status');
+    return res.json();
+  },
+
+  submitRequest: async (data: { motivation: string; documentUrl?: string }) => {
+    const res = await fetchWithAuth('/api/verification/request', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  createSession: async (data: { motivation: string }) => {
+    const res = await fetchWithAuth('/api/verification/create-session', {
+      method: 'POST',
+      body: JSON.stringify(data),
     });
     return res.json();
   },

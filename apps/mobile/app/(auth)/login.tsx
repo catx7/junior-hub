@@ -31,7 +31,7 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       // TODO: Implement Firebase Auth login
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       router.replace('/(tabs)');
     } catch (error) {
       Alert.alert('Error', 'Invalid email or password');
@@ -44,7 +44,7 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       // TODO: Implement social login
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       router.replace('/(tabs)');
     } catch (error) {
       Alert.alert('Error', `Failed to sign in with ${provider}`);
@@ -66,7 +66,7 @@ export default function LoginScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.logo}>LocalServices</Text>
+            <Text style={styles.logo}>JuniorHub</Text>
             <Text style={styles.title}>Welcome Back</Text>
             <Text style={styles.subtitle}>Sign in to continue</Text>
           </View>
@@ -118,9 +118,7 @@ export default function LoginScreen() {
               onPress={handleLogin}
               disabled={isLoading}
             >
-              <Text style={styles.loginBtnText}>
-                {isLoading ? 'Signing in...' : 'Sign In'}
-              </Text>
+              <Text style={styles.loginBtnText}>{isLoading ? 'Signing in...' : 'Sign In'}</Text>
             </TouchableOpacity>
           </View>
 

@@ -37,7 +37,7 @@ describe('Auth API Routes', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer invalid-token',
+          Authorization: 'Bearer invalid-token',
         },
         body: JSON.stringify({ name: 'Test User', email: 'test@example.com' }),
       });
@@ -59,7 +59,7 @@ describe('Auth API Routes', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer valid-token',
+          Authorization: 'Bearer valid-token',
         },
         body: JSON.stringify({ name: 'A', email: 'invalid-email' }), // Invalid data
       });
@@ -84,7 +84,7 @@ describe('Auth API Routes', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer valid-token',
+          Authorization: 'Bearer valid-token',
         },
         body: JSON.stringify({
           name: 'Test User',
@@ -123,7 +123,7 @@ describe('Auth API Routes', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer valid-token',
+          Authorization: 'Bearer valid-token',
         },
         body: JSON.stringify({
           name: 'Test User',

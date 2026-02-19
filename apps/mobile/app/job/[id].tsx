@@ -23,7 +23,13 @@ import {
   Heart,
   X,
 } from 'lucide-react-native';
-import { COLORS, SERVICE_CATEGORIES, SPACING, BORDER_RADIUS, TYPOGRAPHY } from '@localservices/shared';
+import {
+  COLORS,
+  SERVICE_CATEGORIES,
+  SPACING,
+  BORDER_RADIUS,
+  TYPOGRAPHY,
+} from '@localservices/shared';
 
 const { width } = Dimensions.get('window');
 
@@ -84,7 +90,7 @@ Please message me with your experience and availability.`,
     setIsSubmitting(true);
     try {
       // TODO: Implement actual API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       setShowOfferModal(false);
       setOfferPrice('');
       setOfferMessage('');
@@ -109,10 +115,7 @@ Please message me with your experience and availability.`,
           headerTransparent: true,
           headerRight: () => (
             <View style={styles.headerActions}>
-              <TouchableOpacity
-                style={styles.headerBtn}
-                onPress={() => setIsFavorite(!isFavorite)}
-              >
+              <TouchableOpacity style={styles.headerBtn} onPress={() => setIsFavorite(!isFavorite)}>
                 <Heart
                   size={22}
                   color={isFavorite ? COLORS.error : COLORS.white}
@@ -140,12 +143,7 @@ Please message me with your experience and availability.`,
             }}
           >
             {job.images.map((uri, index) => (
-              <Image
-                key={index}
-                source={{ uri }}
-                style={styles.image}
-                contentFit="cover"
-              />
+              <Image key={index} source={{ uri }} style={styles.image} contentFit="cover" />
             ))}
           </ScrollView>
           {job.images.length > 1 && (
@@ -169,8 +167,11 @@ Please message me with your experience and availability.`,
           <View style={styles.badgeRow}>
             <View style={[styles.categoryBadge, { backgroundColor: `${categoryInfo?.color}20` }]}>
               <Text style={[styles.categoryBadgeText, { color: categoryInfo?.color }]}>
-                {job.category === 'BABYSITTING' ? 'Babysitting' :
-                 job.category === 'HOUSE_CLEANING' ? 'Cleaning' : 'Food'}
+                {job.category === 'BABYSITTING'
+                  ? 'Babysitting'
+                  : job.category === 'HOUSE_CLEANING'
+                    ? 'Cleaning'
+                    : 'Food'}
               </Text>
             </View>
             <View style={[styles.statusBadge, styles.statusOpen]}>
@@ -217,9 +218,7 @@ Please message me with your experience and availability.`,
                 />
               ) : (
                 <View style={styles.posterAvatarPlaceholder}>
-                  <Text style={styles.posterAvatarText}>
-                    {job.poster.name.charAt(0)}
-                  </Text>
+                  <Text style={styles.posterAvatarText}>{job.poster.name.charAt(0)}</Text>
                 </View>
               )}
               <View style={styles.posterInfo}>
@@ -250,10 +249,7 @@ Please message me with your experience and availability.`,
           <MessageSquare size={20} color={COLORS.primary} />
           <Text style={styles.contactBtnText}>Contact</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.offerBtn}
-          onPress={() => setShowOfferModal(true)}
-        >
+        <TouchableOpacity style={styles.offerBtn} onPress={() => setShowOfferModal(true)}>
           <Text style={styles.offerBtnText}>Make an Offer</Text>
         </TouchableOpacity>
       </View>

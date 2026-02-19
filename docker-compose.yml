@@ -3,14 +3,14 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: localservices-db
+    container_name: juniorhub-db
     restart: unless-stopped
     ports:
       - '5432:5432'
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: localservices
+      POSTGRES_DB: juniorhub
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
@@ -22,7 +22,7 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: localservices-redis
+    container_name: juniorhub-redis
     restart: unless-stopped
     ports:
       - '6379:6379'
@@ -37,12 +37,12 @@ services:
   # Optional: pgAdmin for database management
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: localservices-pgadmin
+    container_name: juniorhub-pgadmin
     restart: unless-stopped
     ports:
       - '5050:80'
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@localservices.com
+      PGADMIN_DEFAULT_EMAIL: admin@juniorhub.com
       PGADMIN_DEFAULT_PASSWORD: admin
     volumes:
       - pgadmin_data:/var/lib/pgadmin

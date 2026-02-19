@@ -26,6 +26,7 @@ enum JobStatus {
   DRAFT
   OPEN
   IN_PROGRESS
+  PENDING_COMPLETION
   COMPLETED
   CANCELLED
 }
@@ -35,6 +36,17 @@ enum ServiceCategory {
   HOUSE_CLEANING
   LOCAL_FOOD
   OTHER
+}
+
+enum JobType {
+  SERVICE_REQUEST
+  SERVICE_OFFERING
+}
+
+enum PricingType {
+  FIXED
+  HOURLY
+  PER_LOCATION
 }
 
 enum PromotionTier {
@@ -78,18 +90,27 @@ model User {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  jobsPosted       Job[]                     @relation("JobPoster")
-  jobsAccepted     Job[]                     @relation("JobProvider")
-  offers           Offer[]
-  reviewsGiven     Review[]                  @relation("ReviewAuthor")
-  reviewsReceived  Review[]                  @relation("ReviewTarget")
-  messagesFrom     Message[]                 @relation("MessageSender")
-  conversations    ConversationParticipant[]
-  promotions       Promotion[]
-  notifications    Notification[]
-  savedJobs        SavedJob[]
-  reportsMade      Report[]                  @relation("ReportsMade")
-  reportsReceived  Report[]                  @relation("ReportsReceived")
+  jobsPosted           Job[]                     @relation("JobPoster")
+  jobsAccepted         Job[]                     @relation("JobProvider")
+  offers               Offer[]
+  reviewsGiven         Review[]                  @relation("ReviewAuthor")
+  reviewsReceived      Review[]                  @relation("ReviewTarget")
+  messagesFrom         Message[]                 @relation("MessageSender")
+  conversations        ConversationParticipant[]
+  promotions           Promotion[]
+  notifications        Notification[]
+  savedJobs            SavedJob[]
+  reportsMade          Report[]                  @relation("ReportsMade")
+  reportsReceived      Report[]                  @relation("ReportsReceived")
+  kidsEventsOrganized  KidsEvent[]               @relation("EventOrganizer")
+  eventRegistrations   EventRegistration[]
+  clothesListings      ClothesItem[]             @relation("ClothesSeller")
+  clothesClaimed       ClothesItem[]             @relation("ClothesClaimedBy")
+  bookingRequests      BookingRequest[]           @relation("BookingClient")
+  foodListings         LocalFood[]               @relation("FoodVendor")
+  foodOrders           FoodOrder[]               @relation("FoodCustomer")
+  verificationRequests VerificationRequest[]     @relation("VerificationUser")
+  verificationsReviewed VerificationRequest[]    @relation("VerificationReviewer")
 
   @@index([firebaseUid])
   @@index([email])
@@ -107,7 +128,9 @@ model Job {
   title       String
   description String          @db.Text
   category    ServiceCategory
-  budget      Decimal         @db.Decimal(10, 2)
+  jobType     JobType         @default(SERVICE_REQUEST)
+  pricingType PricingType     @default(FIXED)
+  budget      Decimal?        @db.Decimal(10, 2)
   currency    String          @default("USD")
   status      JobStatus       @default(DRAFT)
   location    String
@@ -119,19 +142,22 @@ model Job {
   updatedAt   DateTime        @updatedAt
 
   // Relations
-  posterId     String
-  poster       User          @relation("JobPoster", fields: [posterId], references: [id], onDelete: Cascade)
-  providerId   String?
-  provider     User?         @relation("JobProvider", fields: [providerId], references: [id], onDelete: SetNull)
-  images       JobImage[]
-  offers       Offer[]
-  reviews      Review[]
-  conversation Conversation?
-  promotion    Promotion?
-  savedBy      SavedJob[]
+  posterId        String
+  poster          User              @relation("JobPoster", fields: [posterId], references: [id], onDelete: Cascade)
+  providerId      String?
+  provider        User?             @relation("JobProvider", fields: [providerId], references: [id], onDelete: SetNull)
+  images          JobImage[]
+  offers          Offer[]
+  bookingRequests BookingRequest[]
+  reviews         Review[]
+  conversations   Conversation[]
+  promotion       Promotion?
+  savedBy         SavedJob[]
+  notifications   Notification[]
 
   @@index([category, status])
   @@index([status])
+  @@index([jobType, status])
   @@index([latitude, longitude])
   @@index([posterId])
   @@index([providerId])
@@ -208,14 +234,15 @@ model Review {
 
 model Conversation {
   id        String   @id @default(cuid())
-  jobId     String   @unique
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  jobId     String?
+  job       Job?     @relation(fields: [jobId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   participants ConversationParticipant[]
   messages     Message[]
 
+  @@index([jobId])
   @@index([updatedAt])
 }
 
@@ -284,17 +311,20 @@ model Promotion {
 
 model Notification {
   id        String           @id @default(cuid())
-  type      NotificationType
+  type      String           // Changed from enum to string for flexibility
   title     String
   body      String
   data      Json             @default("{}")
   isRead    Boolean          @default(false)
   userId    String
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobId     String?
+  job       Job?             @relation(fields: [jobId], references: [id], onDelete: SetNull)
   createdAt DateTime         @default(now())
 
   @@index([userId, isRead])
   @@index([userId, createdAt])
+  @@index([jobId])
 }
 
 // ===========================================
@@ -342,4 +372,194 @@ enum ReportStatus {
   INVESTIGATING
   RESOLVED
   DISMISSED
+}
+
+// ===========================================
+// Kids Events Model
+// ===========================================
+
+model KidsEvent {
+  id                  String              @id @default(cuid())
+  title               String
+  description         String              @db.Text
+  category            String
+  ageRangeMin         Int
+  ageRangeMax         Int
+  date                DateTime
+  time                String
+  location            String
+  latitude            Float?
+  longitude           Float?
+  maxParticipants     Int
+  currentParticipants Int                 @default(0)
+  price               Decimal             @db.Decimal(10, 2)
+  image               String?
+  organizerId         String
+  organizer           User                @relation("EventOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
+  registrations       EventRegistration[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@index([date])
+  @@index([category])
+  @@index([organizerId])
+  @@index([date, category])
+}
+
+model EventRegistration {
+  id        String    @id @default(cuid())
+  eventId   String
+  event     KidsEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  childName String
+  childAge  Int
+  notes     String?   @db.Text
+  createdAt DateTime  @default(now())
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+// ===========================================
+// Kids Clothes Model
+// ===========================================
+
+model ClothesItem {
+  id            String   @id @default(cuid())
+  title         String
+  description   String   @db.Text
+  category      String
+  size          String
+  gender        String   // 'Boy', 'Girl', 'Unisex'
+  condition     String   // 'Like New', 'Good', 'Fair'
+  type          String   // 'Sell', 'Donate'
+  price         Decimal? @db.Decimal(10, 2)
+  originalPrice Decimal? @db.Decimal(10, 2)
+  images        String[]
+  location      String
+  latitude      Float?
+  longitude    Float?
+  sellerId      String
+  seller        User     @relation("ClothesSeller", fields: [sellerId], references: [id], onDelete: Cascade)
+  claimedById   String?
+  claimedBy     User?    @relation("ClothesClaimedBy", fields: [claimedById], references: [id], onDelete: SetNull)
+  status        String   @default("AVAILABLE") // 'AVAILABLE', 'CLAIMED', 'COMPLETED'
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([category, status])
+  @@index([type, status])
+  @@index([sellerId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// ===========================================
+// Booking Request Model (for Service Offerings)
+// ===========================================
+
+model BookingRequest {
+  id            String   @id @default(cuid())
+  preferredDate DateTime
+  message       String   @db.Text
+  status        String   @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  jobId         String
+  job           Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  clientId      String
+  client        User     @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([jobId, clientId])
+  @@index([jobId])
+  @@index([clientId])
+  @@index([status])
+}
+
+// ===========================================
+// Local Food Model
+// ===========================================
+
+model LocalFood {
+  id                String      @id @default(cuid())
+  title             String
+  description       String      @db.Text
+  category          String
+  price             Decimal     @db.Decimal(10, 2)
+  images            String[]
+  pickupOnly        Boolean     @default(false)
+  pickupLocation    String?
+  deliveryAvailable Boolean     @default(false)
+  deliveryArea      String?
+  location          String
+  latitude          Float?
+  longitude         Float?
+  vendorId          String
+  vendor            User        @relation("FoodVendor", fields: [vendorId], references: [id], onDelete: Cascade)
+  orders            FoodOrder[]
+  status            String      @default("AVAILABLE")
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([category, status])
+  @@index([vendorId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model FoodOrder {
+  id              String    @id @default(cuid())
+  foodItemId      String
+  foodItem        LocalFood @relation(fields: [foodItemId], references: [id], onDelete: Cascade)
+  customerId      String
+  customer        User      @relation("FoodCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+  quantity        Int
+  orderType       String    // 'DELIVERY' or 'PICKUP'
+  deliveryAddress String?
+  pickupLocation  String?
+  message         String?   @db.Text
+  status          String    @default("PENDING") // PENDING, ACCEPTED, REJECTED, COMPLETED
+  totalPrice      Decimal   @db.Decimal(10, 2)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([foodItemId])
+  @@index([customerId])
+  @@index([status])
+}
+
+// ===========================================
+// Provider Verification Model
+// ===========================================
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model VerificationRequest {
+  id         String             @id @default(cuid())
+  userId     String
+  user       User               @relation("VerificationUser", fields: [userId], references: [id], onDelete: Cascade)
+  status     VerificationStatus @default(PENDING)
+  documents  Json               @default("{}") // {idCard: url, backgroundCheck: url, references: [urls]}
+  notes      String?            @db.Text
+  motivation String?            @db.Text
+  idnormSessionId    String?    @unique
+  idnormStatus       String?    // created, in_progress, completed, expired
+  idnormResult       Json?      // Full verification result from idnorm
+  submittedAt DateTime          @default(now())
+  reviewedAt DateTime?
+  reviewedBy String?
+  reviewer   User?              @relation("VerificationReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  createdAt  DateTime           @default(now())
+  updatedAt  DateTime           @updatedAt
+
+  @@index([status])
+  @@index([userId])
+  @@index([submittedAt])
+  @@index([idnormSessionId])
 }

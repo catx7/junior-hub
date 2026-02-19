@@ -24,15 +24,10 @@ export function Providers({ children }: ProvidersProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="light"
-        enableSystem
-        disableTransitionOnChange
-      >
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
         {children}
         <Toaster
-          position="top-right"
+          position="top-center"
           toastOptions={{
             style: {
               background: 'hsl(var(--background))',

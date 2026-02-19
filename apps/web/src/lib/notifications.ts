@@ -119,7 +119,13 @@ export function showLocalNotification(
 
 // Notification types
 export interface NotificationData {
-  type: 'new_message' | 'new_offer' | 'offer_accepted' | 'offer_rejected' | 'job_completed' | 'new_review';
+  type:
+    | 'new_message'
+    | 'new_offer'
+    | 'offer_accepted'
+    | 'offer_rejected'
+    | 'job_completed'
+    | 'new_review';
   title: string;
   body: string;
   jobId?: string;

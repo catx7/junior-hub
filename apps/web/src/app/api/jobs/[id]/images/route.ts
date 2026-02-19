@@ -39,17 +39,15 @@ async function validateImageContent(file: File): Promise<{ valid: boolean; type:
   // Check WebP (RIFF header + WEBP at offset 8)
   if (bytes.length >= 12) {
     const isRiff = IMAGE_SIGNATURES.webp.every((byte, i) => bytes[i] === byte);
-    const isWebp = bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+    const isWebp =
+      bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
     if (isRiff && isWebp) return { valid: true, type: 'webp' };
   }
 
   return { valid: false, type: null };
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await verifyAuthToken(request);
     if (!user) {
@@ -69,18 +67,12 @@ export async function POST(
     }
 
     if (job.posterId !== user.id) {
-      return NextResponse.json(
-        { error: 'Only the job poster can upload images' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Only the job poster can upload images' }, { status: 403 });
     }
 
     // Check if max images reached
     if (job.images.length >= MAX_IMAGES) {
-      return NextResponse.json(
-        { error: `Maximum ${MAX_IMAGES} images allowed` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Maximum ${MAX_IMAGES} images allowed` }, { status: 400 });
     }
 
     // Get the form data
@@ -88,10 +80,7 @@ export async function POST(
     const files = formData.getAll('images') as File[];
 
     if (!files.length) {
-      return NextResponse.json(
-        { error: 'No images provided' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No images provided' }, { status: 400 });
     }
 
     // Check if adding these would exceed the limit
@@ -105,10 +94,7 @@ export async function POST(
     // Validate files - check size and actual file content (not spoofable MIME type)
     for (const file of files) {
       if (file.size > MAX_FILE_SIZE) {
-        return NextResponse.json(
-          { error: 'File too large. Maximum size is 5MB' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'File too large. Maximum size is 5MB' }, { status: 400 });
       }
 
       // Validate actual file content using magic bytes (prevents MIME type spoofing)
@@ -123,9 +109,8 @@ export async function POST(
 
     // Upload to Cloudinary and save to database
     const uploadedImages = [];
-    const currentMaxOrder = job.images.length > 0
-      ? Math.max(...job.images.map(img => img.order))
-      : -1;
+    const currentMaxOrder =
+      job.images.length > 0 ? Math.max(...job.images.map((img) => img.order)) : -1;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -146,17 +131,11 @@ export async function POST(
     return NextResponse.json(uploadedImages, { status: 201 });
   } catch (error) {
     console.error('Upload images error:', error);
-    return NextResponse.json(
-      { error: 'Failed to upload images' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to upload images' }, { status: 500 });
   }
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const jobId = params.id;
 
@@ -168,9 +147,6 @@ export async function GET(
     return NextResponse.json(images);
   } catch (error) {
     console.error('Get images error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

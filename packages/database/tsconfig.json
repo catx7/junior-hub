@@ -4,10 +4,11 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": ".",
+    "incremental": false, // Disable incremental for tsup
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src/**/*", "prisma/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "**/*.test.ts"]
 }

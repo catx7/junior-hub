@@ -32,9 +32,9 @@ export default function RegisterScreen() {
     { label: 'Contains uppercase letter', met: /[A-Z]/.test(password) },
   ];
 
-  const isPasswordValid = passwordRequirements.every(req => req.met);
-  const isFormValid = name.trim() && email.trim() && isPasswordValid &&
-                      password === confirmPassword && agreeToTerms;
+  const isPasswordValid = passwordRequirements.every((req) => req.met);
+  const isFormValid =
+    name.trim() && email.trim() && isPasswordValid && password === confirmPassword && agreeToTerms;
 
   const handleRegister = async () => {
     if (!name.trim()) {
@@ -61,9 +61,9 @@ export default function RegisterScreen() {
     setIsLoading(true);
     try {
       // TODO: Implement Firebase Auth registration
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       Alert.alert('Success', 'Account created! Please check your email to verify.', [
-        { text: 'OK', onPress: () => router.replace('/login') }
+        { text: 'OK', onPress: () => router.replace('/login') },
       ]);
     } catch (error) {
       Alert.alert('Error', 'Failed to create account. Please try again.');
@@ -85,7 +85,7 @@ export default function RegisterScreen() {
         >
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.logo}>LocalServices</Text>
+            <Text style={styles.logo}>JuniorHub</Text>
             <Text style={styles.title}>Create Account</Text>
             <Text style={styles.subtitle}>Sign up to get started</Text>
           </View>
@@ -184,15 +184,16 @@ export default function RegisterScreen() {
                 {agreeToTerms && <Check size={14} color={COLORS.white} />}
               </View>
               <Text style={styles.termsText}>
-                I agree to the{' '}
-                <Text style={styles.termsLink}>Terms of Service</Text>
-                {' '}and{' '}
+                I agree to the <Text style={styles.termsLink}>Terms of Service</Text> and{' '}
                 <Text style={styles.termsLink}>Privacy Policy</Text>
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.registerBtn, (!isFormValid || isLoading) && styles.registerBtnDisabled]}
+              style={[
+                styles.registerBtn,
+                (!isFormValid || isLoading) && styles.registerBtnDisabled,
+              ]}
               onPress={handleRegister}
               disabled={!isFormValid || isLoading}
             >

@@ -20,6 +20,7 @@
 ## Feature Scope
 
 ### Geographic Expansion
+
 - [ ] Multi-city support
 - [ ] City-specific landing pages
 - [ ] Local SEO optimization
@@ -29,6 +30,7 @@
 - [ ] Provider availability zones
 
 ### AI & Recommendations
+
 - [ ] Smart job matching
 - [ ] Provider recommendations
 - [ ] Price suggestions based on market
@@ -39,13 +41,14 @@
 
 ### Subscription Plans
 
-| Plan | Price | Features |
-|------|-------|----------|
-| **Free** | $0 | Basic features, ads shown |
-| **Pro** | $9.99/mo | No ads, priority support, analytics |
+| Plan         | Price     | Features                                |
+| ------------ | --------- | --------------------------------------- |
+| **Free**     | $0        | Basic features, ads shown               |
+| **Pro**      | $9.99/mo  | No ads, priority support, analytics     |
 | **Business** | $29.99/mo | Team accounts, API access, bulk posting |
 
 ### Provider Pro Features
+
 - [ ] Reduced commission (8% vs 12%)
 - [ ] Priority in search results
 - [ ] Advanced analytics dashboard
@@ -55,6 +58,7 @@
 - [ ] Tax reports
 
 ### B2B Marketplace
+
 - [ ] Business accounts
 - [ ] Bulk job posting
 - [ ] API access
@@ -64,6 +68,7 @@
 - [ ] White-label options
 
 ### Mobile Enhancements
+
 - [ ] Offline mode
 - [ ] Background location
 - [ ] In-app video calls
@@ -73,6 +78,7 @@
 - [ ] Siri/Google Assistant integration
 
 ### Trust & Safety
+
 - [ ] AI content moderation
 - [ ] Real-time location sharing
 - [ ] Emergency SOS feature
@@ -82,6 +88,7 @@
 - [ ] Biometric login
 
 ### Communication
+
 - [ ] Voice messages
 - [ ] Video calls
 - [ ] Scheduled messages
@@ -123,17 +130,17 @@
 
 ### AWS Infrastructure (Scaled)
 
-| Service | Purpose | Estimated Cost |
-|---------|---------|----------------|
-| EKS | Kubernetes cluster | ~$150/month |
-| RDS (Multi-AZ) | Primary database | ~$200/month |
-| RDS Read Replicas | Read scaling | ~$100/month |
-| ElastiCache Cluster | Redis cluster | ~$100/month |
-| S3 + CloudFront | Static assets | ~$50/month |
-| OpenSearch | Search & analytics | ~$100/month |
-| SageMaker | ML recommendations | ~$200/month |
-| Lambda | Serverless functions | ~$50/month |
-| **Total** | | **~$950/month** |
+| Service             | Purpose              | Estimated Cost  |
+| ------------------- | -------------------- | --------------- |
+| EKS                 | Kubernetes cluster   | ~$150/month     |
+| RDS (Multi-AZ)      | Primary database     | ~$200/month     |
+| RDS Read Replicas   | Read scaling         | ~$100/month     |
+| ElastiCache Cluster | Redis cluster        | ~$100/month     |
+| S3 + CloudFront     | Static assets        | ~$50/month      |
+| OpenSearch          | Search & analytics   | ~$100/month     |
+| SageMaker           | ML recommendations   | ~$200/month     |
+| Lambda              | Serverless functions | ~$50/month      |
+| **Total**           |                      | **~$950/month** |
 
 ### Database Sharding Strategy
 
@@ -185,9 +192,7 @@ const searchJobs = async (query: string, location: GeoPoint, radius: number) => 
                 { multi_match: { query, fields: ['title^2', 'description'] } },
                 { term: { status: 'OPEN' } },
               ],
-              filter: [
-                { geo_distance: { distance: `${radius}km`, location } },
-              ],
+              filter: [{ geo_distance: { distance: `${radius}km`, location } }],
             },
           },
           functions: [
@@ -368,6 +373,7 @@ POST   /api/search/suggestions        # Search suggestions
 ## Milestones
 
 ### Week 1-4: Infrastructure Scaling
+
 - [ ] Setup Kubernetes (EKS)
 - [ ] Implement service mesh
 - [ ] Database optimization
@@ -377,6 +383,7 @@ POST   /api/search/suggestions        # Search suggestions
 - [ ] Configure auto-scaling
 
 ### Week 5-8: Subscription System
+
 - [ ] Design subscription tiers
 - [ ] Implement Stripe subscriptions
 - [ ] Build subscription management
@@ -385,6 +392,7 @@ POST   /api/search/suggestions        # Search suggestions
 - [ ] Build billing portal
 
 ### Week 9-12: B2B Features
+
 - [ ] Business account system
 - [ ] Team management
 - [ ] API development
@@ -394,6 +402,7 @@ POST   /api/search/suggestions        # Search suggestions
 - [ ] Bulk operations
 
 ### Week 13-16: AI & Recommendations
+
 - [ ] Data pipeline setup
 - [ ] ML model development
 - [ ] Recommendation API
@@ -402,6 +411,7 @@ POST   /api/search/suggestions        # Search suggestions
 - [ ] A/B testing framework
 
 ### Week 17-20: Geographic Expansion
+
 - [ ] Multi-region support
 - [ ] City onboarding flow
 - [ ] Localization
@@ -410,6 +420,7 @@ POST   /api/search/suggestions        # Search suggestions
 - [ ] Launch 3 new cities
 
 ### Week 21-24: Advanced Mobile
+
 - [ ] Video calling
 - [ ] Offline support
 - [ ] Native payments
@@ -422,6 +433,7 @@ POST   /api/search/suggestions        # Search suggestions
 ## International Expansion Prep
 
 ### Localization Requirements
+
 - [ ] Multi-language support (i18n)
 - [ ] Currency conversion
 - [ ] Local payment methods
@@ -430,6 +442,7 @@ POST   /api/search/suggestions        # Search suggestions
 - [ ] Cultural adaptations
 
 ### Target Markets (Year 2)
+
 1. **Canada** - Similar market, English/French
 2. **UK** - English, established gig economy
 3. **Australia** - English, strong service market
@@ -441,37 +454,37 @@ POST   /api/search/suggestions        # Search suggestions
 
 ### Monthly Recurring Revenue
 
-| Month | Users | Transactions | MRR |
-|-------|-------|--------------|-----|
-| 1 | 20,000 | $400K | $25,000 |
-| 3 | 35,000 | $800K | $50,000 |
-| 6 | 60,000 | $1.5M | $100,000 |
-| 12 | 120,000 | $3.5M | $250,000 |
+| Month | Users   | Transactions | MRR      |
+| ----- | ------- | ------------ | -------- |
+| 1     | 20,000  | $400K        | $25,000  |
+| 3     | 35,000  | $800K        | $50,000  |
+| 6     | 60,000  | $1.5M        | $100,000 |
+| 12    | 120,000 | $3.5M        | $250,000 |
 
 ### Revenue Breakdown (Month 12)
 
-| Source | Monthly |
-|--------|---------|
-| Commissions (10% avg) | $175,000 |
-| Subscriptions | $40,000 |
-| Promotions | $25,000 |
-| B2B/API | $10,000 |
-| **Total** | **$250,000** |
+| Source                | Monthly      |
+| --------------------- | ------------ |
+| Commissions (10% avg) | $175,000     |
+| Subscriptions         | $40,000      |
+| Promotions            | $25,000      |
+| B2B/API               | $10,000      |
+| **Total**             | **$250,000** |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target (Month 6) | Target (Month 12) |
-|--------|------------------|-------------------|
-| Monthly Active Users | 60,000 | 120,000 |
-| Cities Active | 5 | 15 |
-| Jobs Completed/Month | 15,000 | 40,000 |
-| Provider Pro Subscriptions | 500 | 2,000 |
-| Business Accounts | 50 | 200 |
-| API Requests/Day | 100K | 500K |
-| NPS Score | 45 | 55 |
-| Provider Retention | 80% | 85% |
+| Metric                     | Target (Month 6) | Target (Month 12) |
+| -------------------------- | ---------------- | ----------------- |
+| Monthly Active Users       | 60,000           | 120,000           |
+| Cities Active              | 5                | 15                |
+| Jobs Completed/Month       | 15,000           | 40,000            |
+| Provider Pro Subscriptions | 500              | 2,000             |
+| Business Accounts          | 50               | 200               |
+| API Requests/Day           | 100K             | 500K              |
+| NPS Score                  | 45               | 55                |
+| Provider Retention         | 80%              | 85%               |
 
 ---
 
@@ -506,14 +519,14 @@ Total: ~30 people
 
 ## Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Scaling issues | Downtime | Load testing, gradual rollout |
-| ML model bias | Bad recommendations | Regular audits, diverse data |
-| Competitor entry | Market share loss | Feature velocity, loyalty |
-| Regulatory changes | Compliance cost | Legal monitoring, flexibility |
-| Economic downturn | Revenue drop | Diversify services, B2B focus |
-| Key person risk | Knowledge loss | Documentation, redundancy |
+| Risk               | Impact              | Mitigation                    |
+| ------------------ | ------------------- | ----------------------------- |
+| Scaling issues     | Downtime            | Load testing, gradual rollout |
+| ML model bias      | Bad recommendations | Regular audits, diverse data  |
+| Competitor entry   | Market share loss   | Feature velocity, loyalty     |
+| Regulatory changes | Compliance cost     | Legal monitoring, flexibility |
+| Economic downturn  | Revenue drop        | Diversify services, B2B focus |
+| Key person risk    | Knowledge loss      | Documentation, redundancy     |
 
 ---
 
@@ -521,28 +534,29 @@ Total: ~30 people
 
 ### Monthly Operating Costs
 
-| Category | Cost |
-|----------|------|
-| AWS Infrastructure | $950 |
-| Third-party Services | $500 |
-| ML/AI Services | $300 |
-| Monitoring & Security | $200 |
+| Category                 | Cost             |
+| ------------------------ | ---------------- |
+| AWS Infrastructure       | $950             |
+| Third-party Services     | $500             |
+| ML/AI Services           | $300             |
+| Monitoring & Security    | $200             |
 | **Total Infrastructure** | **$1,950/month** |
 
 ### Team Costs (30 people)
 
-| Role | Avg Salary | Count | Monthly |
-|------|------------|-------|---------|
-| Engineering | $120K | 14 | $140,000 |
-| Product/Design | $100K | 5 | $41,667 |
-| Operations | $50K | 7 | $29,167 |
-| Marketing | $80K | 3 | $20,000 |
-| Finance | $90K | 1 | $7,500 |
-| **Total Salaries** | | | **$238,334/month** |
+| Role               | Avg Salary | Count | Monthly            |
+| ------------------ | ---------- | ----- | ------------------ |
+| Engineering        | $120K      | 14    | $140,000           |
+| Product/Design     | $100K      | 5     | $41,667            |
+| Operations         | $50K       | 7     | $29,167            |
+| Marketing          | $80K       | 3     | $20,000            |
+| Finance            | $90K       | 1     | $7,500             |
+| **Total Salaries** |            |       | **$238,334/month** |
 
 ### Total Monthly Burn: ~$250,000
 
 ### Funding Requirements
+
 - **Seed Round** (Pre-Phase 1): $100K
 - **Series A** (Post-Phase 2): $2M
 - **Series B** (Mid-Phase 3): $10M

@@ -14,7 +14,13 @@ import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
 import { MapPin, Camera, X, DollarSign, Calendar } from 'lucide-react-native';
-import { COLORS, SERVICE_CATEGORIES, SPACING, BORDER_RADIUS, TYPOGRAPHY } from '@localservices/shared';
+import {
+  COLORS,
+  SERVICE_CATEGORIES,
+  SPACING,
+  BORDER_RADIUS,
+  TYPOGRAPHY,
+} from '@localservices/shared';
 
 type Category = keyof typeof SERVICE_CATEGORIES;
 
@@ -28,7 +34,7 @@ export default function PostJobScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const categories = Object.values(SERVICE_CATEGORIES).filter(c => c.id !== 'OTHER');
+  const categories = Object.values(SERVICE_CATEGORIES).filter((c) => c.id !== 'OTHER');
 
   const pickImage = async () => {
     if (images.length >= 5) {
@@ -77,9 +83,9 @@ export default function PostJobScreen() {
     setIsSubmitting(true);
     try {
       // TODO: Implement actual API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       Alert.alert('Success', 'Your job has been posted!', [
-        { text: 'OK', onPress: () => router.push('/browse') }
+        { text: 'OK', onPress: () => router.push('/browse') },
       ]);
     } catch (error) {
       Alert.alert('Error', 'Failed to post job. Please try again.');
@@ -93,10 +99,7 @@ export default function PostJobScreen() {
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Category Selection */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Category</Text>
@@ -114,15 +117,14 @@ export default function PostJobScreen() {
                 onPress={() => setCategory(cat.id as Category)}
               >
                 <Text style={styles.categoryEmoji}>
-                  {cat.id === 'BABYSITTING' ? '👶' :
-                   cat.id === 'HOUSE_CLEANING' ? '🏠' : '🍽️'}
+                  {cat.id === 'BABYSITTING' ? '👶' : cat.id === 'HOUSE_CLEANING' ? '🏠' : '🍽️'}
                 </Text>
-                <Text style={[
-                  styles.categoryLabel,
-                  category === cat.id && { color: cat.color },
-                ]}>
-                  {cat.id === 'BABYSITTING' ? 'Babysitting' :
-                   cat.id === 'HOUSE_CLEANING' ? 'Cleaning' : 'Food'}
+                <Text style={[styles.categoryLabel, category === cat.id && { color: cat.color }]}>
+                  {cat.id === 'BABYSITTING'
+                    ? 'Babysitting'
+                    : cat.id === 'HOUSE_CLEANING'
+                      ? 'Cleaning'
+                      : 'Food'}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -204,10 +206,7 @@ export default function PostJobScreen() {
             {images.map((uri, index) => (
               <View key={index} style={styles.imageWrapper}>
                 <Image source={{ uri }} style={styles.uploadedImage} contentFit="cover" />
-                <TouchableOpacity
-                  style={styles.removeImageBtn}
-                  onPress={() => removeImage(index)}
-                >
+                <TouchableOpacity style={styles.removeImageBtn} onPress={() => removeImage(index)}>
                   <X size={16} color={COLORS.white} />
                 </TouchableOpacity>
               </View>
@@ -227,9 +226,7 @@ export default function PostJobScreen() {
           onPress={handleSubmit}
           disabled={isSubmitting}
         >
-          <Text style={styles.submitBtnText}>
-            {isSubmitting ? 'Posting...' : 'Post Job'}
-          </Text>
+          <Text style={styles.submitBtnText}>{isSubmitting ? 'Posting...' : 'Post Job'}</Text>
         </TouchableOpacity>
       </ScrollView>
     </KeyboardAvoidingView>

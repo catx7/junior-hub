@@ -44,16 +44,16 @@ This document describes the technical architecture of LocalServices, a marketpla
 
 ### Technology Decisions
 
-| Layer | Technology | Rationale |
-|-------|------------|-----------|
-| Mobile | React Native + Expo | Cross-platform, fast development, OTA updates |
-| Web | Next.js 14 | SSR, API routes, App Router, great DX |
-| API | Next.js API Routes | Unified codebase with frontend |
-| Database | PostgreSQL | Reliable, feature-rich, Prisma support |
-| Auth | Firebase Auth | Social login, secure, free tier |
-| ORM | Prisma | Type-safe, migrations, great DX |
-| Validation | Zod | Runtime validation, TypeScript integration |
-| State | Zustand + React Query | Lightweight, effective caching |
+| Layer      | Technology            | Rationale                                     |
+| ---------- | --------------------- | --------------------------------------------- |
+| Mobile     | React Native + Expo   | Cross-platform, fast development, OTA updates |
+| Web        | Next.js 14            | SSR, API routes, App Router, great DX         |
+| API        | Next.js API Routes    | Unified codebase with frontend                |
+| Database   | PostgreSQL            | Reliable, feature-rich, Prisma support        |
+| Auth       | Firebase Auth         | Social login, secure, free tier               |
+| ORM        | Prisma                | Type-safe, migrations, great DX               |
+| Validation | Zod                   | Runtime validation, TypeScript integration    |
+| State      | Zustand + React Query | Lightweight, effective caching                |
 
 ---
 
@@ -169,6 +169,7 @@ apps/mobile/
 ### State Management
 
 **Zustand** for global state:
+
 ```typescript
 // stores/auth-store.ts
 export const useAuthStore = create<AuthState>((set) => ({
@@ -180,6 +181,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 ```
 
 **React Query** for server state:
+
 ```typescript
 // hooks/use-jobs.ts
 export function useJobs(filters: JobFilters) {
@@ -234,10 +236,7 @@ export async function POST(request: NextRequest) {
     // 1. Authentication
     const user = await verifyAuthToken(request);
     if (!user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // 2. Validation

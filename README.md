@@ -4,25 +4,45 @@ A marketplace platform connecting users with local service providers - babysitte
 
 ## Features
 
-- **Job Posting** - Post requests for babysitting, house cleaning, or local food
-- **Service Offers** - Providers can submit offers with pricing and details
-- **In-App Chat** - Real-time messaging between users and providers
+### Core Platform
+
+- **Job Marketplace** - Post and browse babysitting, cleaning, and food service jobs
+- **Service Offers** - Providers submit offers with pricing; job posters accept/reject
+- **Real-time Messaging** - In-app chat between users and providers
 - **Reviews & Ratings** - Rate and review completed jobs
-- **User Profiles** - Detailed profiles with photos, location, and verification
+- **User Profiles** - Detailed profiles with verification badges
 - **Social Login** - Sign in with Google, Facebook, or email
+
+### AI-Powered Features
+
+- **AI Health Chat** - Pediatric health assistant powered by Google Gemini
+- **Product Scanner** - Analyze product ingredients for child safety (A-D rating)
+
+### Community Features
+
+- **Kids Events** - Discover and register for local children's activities
+- **Kids Clothes Marketplace** - Buy, sell, or donate kids clothes
+
+### Admin Dashboard
+
+- **User Management** - View, edit roles, delete users
+- **Content Moderation** - Manage jobs and reviews
+- **Provider Verification** - Background check approval system
+- **Push Notifications** - Send notifications to users
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Mobile | React Native + Expo |
-| Web | Next.js 14 (App Router) |
-| Styling | Tailwind CSS + shadcn/ui |
-| Backend | Next.js API Routes |
-| Database | PostgreSQL (Supabase) |
-| Auth | Firebase Authentication |
-| Storage | Cloudinary |
-| Real-time | Socket.io |
+| Layer     | Technology               |
+| --------- | ------------------------ |
+| Mobile    | React Native + Expo      |
+| Web       | Next.js 14 (App Router)  |
+| Styling   | Tailwind CSS + shadcn/ui |
+| Backend   | Next.js API Routes       |
+| Database  | PostgreSQL + Prisma      |
+| Auth      | Firebase Authentication  |
+| Storage   | Cloudinary               |
+| Real-time | Socket.io                |
+| AI        | Google Gemini Pro        |
 
 ## Project Structure
 
@@ -59,7 +79,7 @@ pnpm install
 cp .env.example .env.local
 
 # Start local database
-docker-compose up -d postgres
+docker compose up -d postgres
 
 # Run database migrations
 pnpm db:migrate
@@ -90,23 +110,26 @@ NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=""
 CLOUDINARY_API_KEY=""
 CLOUDINARY_API_SECRET=""
 
+# Google AI (for health chat and product scanner)
+GOOGLE_GEMINI_API_KEY=""
+
 # App
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start all development servers |
-| `pnpm dev:web` | Start web app only |
-| `pnpm dev:mobile` | Start mobile app only |
-| `pnpm build` | Build all applications |
-| `pnpm test` | Run test suite |
-| `pnpm lint` | Run ESLint |
-| `pnpm typecheck` | TypeScript type checking |
-| `pnpm db:migrate` | Run database migrations |
-| `pnpm db:studio` | Open Prisma Studio |
+| Command           | Description                   |
+| ----------------- | ----------------------------- |
+| `pnpm dev`        | Start all development servers |
+| `pnpm dev:web`    | Start web app only            |
+| `pnpm dev:mobile` | Start mobile app only         |
+| `pnpm build`      | Build all applications        |
+| `pnpm test`       | Run test suite                |
+| `pnpm lint`       | Run ESLint                    |
+| `pnpm typecheck`  | TypeScript type checking      |
+| `pnpm db:migrate` | Run database migrations       |
+| `pnpm db:studio`  | Open Prisma Studio            |
 
 ## Documentation
 

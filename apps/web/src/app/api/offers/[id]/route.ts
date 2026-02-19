@@ -3,10 +3,7 @@ import { prisma } from '@localservices/database';
 import { verifyAuthToken } from '@/lib/auth-middleware';
 
 // GET single offer
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await verifyAuthToken(request);
     if (!user) {
@@ -49,18 +46,12 @@ export async function GET(
     return NextResponse.json(offer);
   } catch (error) {
     console.error('Get offer error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 // DELETE - Withdraw offer (provider only)
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await verifyAuthToken(request);
     if (!user) {
@@ -92,10 +83,7 @@ export async function DELETE(
 
     // Cannot withdraw accepted offers
     if (offer.isAccepted) {
-      return NextResponse.json(
-        { error: 'Cannot withdraw an accepted offer' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Cannot withdraw an accepted offer' }, { status: 400 });
     }
 
     // Cannot withdraw if job is no longer open
@@ -113,9 +101,6 @@ export async function DELETE(
     return NextResponse.json({ message: 'Offer withdrawn successfully' });
   } catch (error) {
     console.error('Delete offer error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

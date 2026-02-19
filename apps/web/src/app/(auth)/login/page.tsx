@@ -8,11 +8,13 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from '@/hooks/use-translation';
+import { useRecaptcha } from '@/hooks/use-recaptcha';
 import { loginSchema, type LoginInput } from '@localservices/shared';
 
 export default function LoginPage() {
   const { t } = useTranslation();
   const { loginWithEmail, loginWithGoogle, loginWithFacebook, isLoading } = useAuth();
+  const { verifyCaptcha } = useRecaptcha();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -25,7 +27,7 @@ export default function LoginPage() {
 
   const onSubmit = async (data: LoginInput) => {
     try {
-      await loginWithEmail(data.email, data.password);
+      await loginWithEmail(data.email, data.password, verifyCaptcha);
     } catch (error) {
       // Error handled in hook
     }
@@ -47,18 +49,13 @@ export default function LoginPage() {
               error={!!errors.email}
               {...register('email')}
             />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor="password">{t('auth.password')}</Label>
-              <Link
-                href="/forgot-password"
-                className="text-sm text-primary hover:underline"
-              >
+              <Link href="/forgot-password" className="text-primary text-sm hover:underline">
                 {t('auth.forgotPassword')}
               </Link>
             </div>
@@ -73,17 +70,13 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2"
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-sm text-destructive">{errors.password.message}</p>
+              <p className="text-destructive text-sm">{errors.password.message}</p>
             )}
           </div>
 
@@ -97,9 +90,7 @@ export default function LoginPage() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
-              {t('auth.continueWith')}
-            </span>
+            <span className="bg-card text-muted-foreground px-2">{t('auth.continueWith')}</span>
           </div>
         </div>
 
@@ -144,7 +135,7 @@ export default function LoginPage() {
           </Button>
         </div>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-6 text-center text-sm">
           {t('auth.noAccount')}{' '}
           <Link href="/register" className="text-primary hover:underline">
             {t('auth.register')}

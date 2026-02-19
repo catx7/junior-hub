@@ -15,6 +15,8 @@
     "clean": "rm -rf .next .turbo node_modules"
   },
   "dependencies": {
+    "cloudinary": "^2.5.0",
+    "openai": "^4.78.0",
     "@hookform/resolvers": "^3.3.4",
     "@localservices/database": "workspace:*",
     "@localservices/shared": "workspace:*",
@@ -40,6 +42,8 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "date-fns": "^3.3.1",
+    "leaflet": "^1.9.4",
+    "react-leaflet": "^4.2.1",
     "firebase": "^10.8.0",
     "firebase-admin": "^12.0.0",
     "framer-motion": "^11.0.5",
@@ -49,6 +53,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.2.3",
+    "react-google-recaptcha-v3": "^1.10.1",
     "react-hook-form": "^7.50.1",
     "socket.io-client": "^4.7.4",
     "sonner": "^1.4.0",
@@ -60,6 +65,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.1",
+    "@types/leaflet": "^1.9.8",
     "@types/node": "^20.11.0",
     "@types/react": "^18.2.55",
     "@types/react-dom": "^18.2.19",

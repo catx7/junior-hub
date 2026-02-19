@@ -52,33 +52,35 @@ vi.mock('@localservices/database', () => ({
       create: vi.fn(),
       createMany: vi.fn(),
     },
-    $transaction: vi.fn((fn) => fn({
-      user: {
-        findUnique: vi.fn(),
-        update: vi.fn(),
-      },
-      job: {
-        findUnique: vi.fn(),
-        update: vi.fn(),
-      },
-      offer: {
-        findUnique: vi.fn(),
-        update: vi.fn(),
-        updateMany: vi.fn(),
-        delete: vi.fn(),
-      },
-      review: {
-        create: vi.fn(),
-        findMany: vi.fn(),
-      },
-      conversation: {
-        create: vi.fn(),
-      },
-      notification: {
-        create: vi.fn(),
-        createMany: vi.fn(),
-      },
-    })),
+    $transaction: vi.fn((fn) =>
+      fn({
+        user: {
+          findUnique: vi.fn(),
+          update: vi.fn(),
+        },
+        job: {
+          findUnique: vi.fn(),
+          update: vi.fn(),
+        },
+        offer: {
+          findUnique: vi.fn(),
+          update: vi.fn(),
+          updateMany: vi.fn(),
+          delete: vi.fn(),
+        },
+        review: {
+          create: vi.fn(),
+          findMany: vi.fn(),
+        },
+        conversation: {
+          create: vi.fn(),
+        },
+        notification: {
+          create: vi.fn(),
+          createMany: vi.fn(),
+        },
+      })
+    ),
   },
 }));
 
@@ -92,19 +94,26 @@ vi.mock('@/lib/firebase-admin', () => ({
 vi.mock('@/lib/auth-middleware', () => ({
   authenticate: vi.fn(),
   verifyAuthToken: vi.fn(),
-  unauthorizedResponse: vi.fn(() =>
-    new Response(JSON.stringify({ error: { code: 'UNAUTHORIZED' } }), { status: 401 })
+  unauthorizedResponse: vi.fn(
+    () => new Response(JSON.stringify({ error: { code: 'UNAUTHORIZED' } }), { status: 401 })
   ),
-  forbiddenResponse: vi.fn(() =>
-    new Response(JSON.stringify({ error: { code: 'FORBIDDEN' } }), { status: 403 })
+  forbiddenResponse: vi.fn(
+    () => new Response(JSON.stringify({ error: { code: 'FORBIDDEN' } }), { status: 403 })
   ),
-  notFoundResponse: vi.fn((resource) =>
-    new Response(JSON.stringify({ error: { code: 'NOT_FOUND', message: `${resource} not found` } }), { status: 404 })
+  notFoundResponse: vi.fn(
+    (resource) =>
+      new Response(
+        JSON.stringify({ error: { code: 'NOT_FOUND', message: `${resource} not found` } }),
+        { status: 404 }
+      )
   ),
-  validationErrorResponse: vi.fn((errors) =>
-    new Response(JSON.stringify({ error: { code: 'VALIDATION_ERROR', details: errors } }), { status: 400 })
+  validationErrorResponse: vi.fn(
+    (errors) =>
+      new Response(JSON.stringify({ error: { code: 'VALIDATION_ERROR', details: errors } }), {
+        status: 400,
+      })
   ),
-  serverErrorResponse: vi.fn(() =>
-    new Response(JSON.stringify({ error: { code: 'INTERNAL_ERROR' } }), { status: 500 })
+  serverErrorResponse: vi.fn(
+    () => new Response(JSON.stringify({ error: { code: 'INTERNAL_ERROR' } }), { status: 500 })
   ),
 }));

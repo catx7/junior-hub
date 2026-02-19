@@ -1,4 +1,4 @@
--- LocalServices Database Initialization Script
+-- JuniorHub Database Initialization Script
 -- This script runs when the PostgreSQL container starts for the first time
 
 -- Create extensions
@@ -10,10 +10,10 @@ CREATE EXTENSION IF NOT EXISTS "postgis";
 -- This is just for reference
 
 -- Grant privileges
-GRANT ALL PRIVILEGES ON DATABASE localservices TO postgres;
+GRANT ALL PRIVILEGES ON DATABASE juniorhub TO postgres;
 
 -- Log initialization
 DO $$
 BEGIN
-  RAISE NOTICE 'LocalServices database initialized successfully at %', NOW();
+  RAISE NOTICE 'JuniorHub database initialized successfully at %', NOW();
 END $$;

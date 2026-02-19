@@ -65,15 +65,21 @@ export function onNewMessage(callback: (message: any) => void): void {
   socket?.on('new_message', callback);
 }
 
-export function onMessageRead(callback: (data: { messageId: string; readAt: string }) => void): void {
+export function onMessageRead(
+  callback: (data: { messageId: string; readAt: string }) => void
+): void {
   socket?.on('message_read', callback);
 }
 
-export function onTyping(callback: (data: { conversationId: string; userId: string }) => void): void {
+export function onTyping(
+  callback: (data: { conversationId: string; userId: string }) => void
+): void {
   socket?.on('typing', callback);
 }
 
-export function onStopTyping(callback: (data: { conversationId: string; userId: string }) => void): void {
+export function onStopTyping(
+  callback: (data: { conversationId: string; userId: string }) => void
+): void {
   socket?.on('stop_typing', callback);
 }
 
@@ -161,10 +167,9 @@ export class MessagePoller {
         params.set('after', this.lastMessageId);
       }
 
-      const response = await fetch(
-        `/api/conversations/${this.conversationId}/messages?${params}`,
-        { credentials: 'include' }
-      );
+      const response = await fetch(`/api/conversations/${this.conversationId}/messages?${params}`, {
+        credentials: 'include',
+      });
 
       if (response.ok) {
         const messages = await response.json();

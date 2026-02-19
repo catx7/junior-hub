@@ -48,9 +48,7 @@ export default function TabLayout() {
         name="post"
         options={{
           title: 'Post',
-          tabBarIcon: ({ color, size }) => (
-            <PlusCircle size={size + 4} color={COLORS.primary} />
-          ),
+          tabBarIcon: ({ color, size }) => <PlusCircle size={size + 4} color={COLORS.primary} />,
           headerTitle: 'Create Job',
         }}
       />
@@ -58,9 +56,7 @@ export default function TabLayout() {
         name="messages"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color, size }) => (
-            <MessageSquare size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <MessageSquare size={size} color={color} />,
           headerTitle: 'Messages',
         }}
       />

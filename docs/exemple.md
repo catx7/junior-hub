@@ -28,7 +28,7 @@ function getUser(id) {
 
 // ✅ TypeScript - eroarea apare instant în editor
 function getUser(id: string): Promise<User> {
-  return fetch(`/api/users/${id}`).then(res => res.json());
+  return fetch(`/api/users/${id}`).then((res) => res.json());
 }
 
 // Dacă încerci: getUser(123) → Eroare: "Argument of type 'number' is not assignable to type 'string'"
@@ -37,6 +37,7 @@ function getUser(id: string): Promise<User> {
 ### 2. Next.js 14 (în loc de React simplu)
 
 **De ce?** Next.js oferă:
+
 - **Server-Side Rendering (SSR)** - paginile se încarcă mai repede
 - **API Routes** - backend și frontend în același proiect
 - **App Router** - routing bazat pe foldere, simplu de înțeles
@@ -82,6 +83,7 @@ async function JobsPage() {
 ### 3. Prisma ORM (în loc de SQL raw sau alte ORM-uri)
 
 **De ce?**
+
 - Generează tipuri TypeScript automat din schema
 - Migrări automate de bază de date
 - Query-uri type-safe (nu poți greși numele unui câmp)
@@ -103,7 +105,7 @@ const user = await userRepository.findOne({
 const user = await prisma.user.findUnique({
   where: { email }, // Dacă scrii "emial" → eroare instant
   include: {
-    jobsPosted: true,    // Relații definite în schema
+    jobsPosted: true, // Relații definite în schema
     reviewsReceived: true,
   },
 });
@@ -190,6 +192,7 @@ const validData = result.data; // Tipat corect!
 ### 5. Firebase Auth (în loc de auth custom)
 
 **De ce?**
+
 - Gestionează parole, token-uri, sesiuni - nu trebuie să le implementezi
 - Social login (Google, Facebook) out-of-the-box
 - Verificare email, reset parolă - totul inclus
@@ -221,6 +224,7 @@ const token = await auth.currentUser.getIdToken();
 ### 6. React Query / TanStack Query (în loc de useEffect + useState)
 
 **De ce?**
+
 - Cache automat
 - Refetch la focus/reconectare
 - Loading/error states
@@ -235,12 +239,12 @@ function JobsList() {
 
   useEffect(() => {
     fetch('/api/jobs')
-      .then(res => res.json())
-      .then(data => {
+      .then((res) => res.json())
+      .then((data) => {
         setJobs(data);
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setError(err);
         setLoading(false);
       });
@@ -251,9 +255,14 @@ function JobsList() {
 
 // ✅ React Query - totul e gestionat automat
 function JobsList() {
-  const { data: jobs, isLoading, error, refetch } = useQuery({
+  const {
+    data: jobs,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ['jobs'],
-    queryFn: () => fetch('/api/jobs').then(res => res.json()),
+    queryFn: () => fetch('/api/jobs').then((res) => res.json()),
     staleTime: 5 * 60 * 1000, // Cache valid 5 minute
     refetchOnWindowFocus: true, // Refresh când user-ul revine la tab
   });
@@ -265,6 +274,7 @@ function JobsList() {
 ### 7. Zustand (în loc de Redux sau Context)
 
 **De ce?**
+
 - Simplu - nu trebuie reducers, actions, dispatch
 - Performant - nu re-renderează tot arborele
 - TypeScript-friendly
@@ -286,7 +296,7 @@ const userReducer = (state = null, action) => {
 };
 
 // component.tsx
-const user = useSelector(state => state.user);
+const user = useSelector((state) => state.user);
 const dispatch = useDispatch();
 dispatch(setUser(newUser));
 
@@ -315,6 +325,7 @@ setUser(newUser);
 ### 8. Tailwind CSS (în loc de CSS normal sau styled-components)
 
 **De ce?**
+
 - Utility-first - scrii stiluri direct în JSX
 - Nu mai ai fișiere CSS separate
 - Design consistent prin design tokens
@@ -355,6 +366,7 @@ import './styles.css';
 ### 9. Expo / React Native (pentru Mobile)
 
 **De ce?**
+
 - Un singur codebase pentru iOS și Android
 - Hot reload - vezi schimbările instant
 - Acces la API-uri native (cameră, notificări, etc.)
@@ -464,7 +476,7 @@ async function handleSubmit(e: React.FormEvent) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`, // Token-ul Firebase
+      Authorization: `Bearer ${token}`, // Token-ul Firebase
     },
     body: JSON.stringify(formData),
   });
@@ -552,7 +564,7 @@ export async function authenticate(request: NextRequest) {
     const user = await prisma.user.findUnique({
       where: { firebaseUid: decodedToken.uid },
       select: {
-        id: true,      // ID-ul nostru intern (cuid)
+        id: true, // ID-ul nostru intern (cuid)
         email: true,
         name: true,
         role: true,
@@ -593,37 +605,37 @@ API Route ────────────────►│
 ```typescript
 // Continuare din apps/web/src/app/api/jobs/route.ts
 
-    // ═══════════════════════════════════════════════════════════════
-    // PASUL 3.2: Validare - Verifică dacă datele sunt corecte
-    // ═══════════════════════════════════════════════════════════════
-    const body = await request.json();
-    // body = { title: "Caut bonă", description: "...", budget: 100, ... }
+// ═══════════════════════════════════════════════════════════════
+// PASUL 3.2: Validare - Verifică dacă datele sunt corecte
+// ═══════════════════════════════════════════════════════════════
+const body = await request.json();
+// body = { title: "Caut bonă", description: "...", budget: 100, ... }
 
-    const validationResult = createJobSchema.safeParse(body);
-    //                                         │
-    //                                         └─► Zod verifică:
-    //                                             - title: string, min 3 chars
-    //                                             - description: string, min 10 chars
-    //                                             - budget: number, positive
-    //                                             - category: enum valid
+const validationResult = createJobSchema.safeParse(body);
+//                                         │
+//                                         └─► Zod verifică:
+//                                             - title: string, min 3 chars
+//                                             - description: string, min 10 chars
+//                                             - budget: number, positive
+//                                             - category: enum valid
 
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Validation failed',
-          details: validationResult.error.errors,
-          // details = [
-          //   { path: ['title'], message: 'Minim 3 caractere' },
-          //   { path: ['budget'], message: 'Trebuie să fie pozitiv' }
-          // ]
-        },
-        { status: 400 }
-      );
-    }
+if (!validationResult.success) {
+  return NextResponse.json(
+    {
+      error: 'Validation failed',
+      details: validationResult.error.errors,
+      // details = [
+      //   { path: ['title'], message: 'Minim 3 caractere' },
+      //   { path: ['budget'], message: 'Trebuie să fie pozitiv' }
+      // ]
+    },
+    { status: 400 }
+  );
+}
 
-    const { title, description, budget, category, location, latitude, longitude } =
-      validationResult.data;
-    // Acum avem date validate și tipate corect!
+const { title, description, budget, category, location, latitude, longitude } =
+  validationResult.data;
+// Acum avem date validate și tipate corect!
 ```
 
 ### Pasul 3.3: Salvare în baza de date
@@ -631,42 +643,42 @@ API Route ────────────────►│
 ```typescript
 // Continuare din apps/web/src/app/api/jobs/route.ts
 
-    // ═══════════════════════════════════════════════════════════════
-    // PASUL 3.3: Creare în DB - Salvează job-ul
-    // ═══════════════════════════════════════════════════════════════
-    const job = await prisma.job.create({
-      data: {
-        title,
-        description,
-        budget,
-        category,
-        location,
-        latitude,
-        longitude,
-        status: 'OPEN',
-        posterId: user.id,  // Legătura cu user-ul autentificat
+// ═══════════════════════════════════════════════════════════════
+// PASUL 3.3: Creare în DB - Salvează job-ul
+// ═══════════════════════════════════════════════════════════════
+const job = await prisma.job.create({
+  data: {
+    title,
+    description,
+    budget,
+    category,
+    location,
+    latitude,
+    longitude,
+    status: 'OPEN',
+    posterId: user.id, // Legătura cu user-ul autentificat
+  },
+  include: {
+    poster: {
+      select: {
+        id: true,
+        name: true,
+        avatar: true,
       },
-      include: {
-        poster: {
-          select: {
-            id: true,
-            name: true,
-            avatar: true,
-          },
-        },
-      },
-    });
+    },
+  },
+});
 
-    // job = {
-    //   id: "clx456abc...",
-    //   title: "Caut bonă",
-    //   description: "...",
-    //   budget: 100,
-    //   status: "OPEN",
-    //   posterId: "clx123...",
-    //   poster: { id: "clx123...", name: "Ion", avatar: "..." },
-    //   createdAt: "2024-01-15T10:30:00Z"
-    // }
+// job = {
+//   id: "clx456abc...",
+//   title: "Caut bonă",
+//   description: "...",
+//   budget: 100,
+//   status: "OPEN",
+//   posterId: "clx123...",
+//   poster: { id: "clx123...", name: "Ion", avatar: "..." },
+//   createdAt: "2024-01-15T10:30:00Z"
+// }
 ```
 
 ```
@@ -909,10 +921,7 @@ function OfferModal({ visible, jobId, onClose, onSuccess }) {
 ```typescript
 // apps/web/src/app/api/jobs/[id]/offers/route.ts
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     // 1. Autentificare
     const user = await authenticate(request);
@@ -938,16 +947,14 @@ export async function POST(
 
     // Nu poți face ofertă la propriul job
     if (job.posterId === user.id) {
-      return NextResponse.json(
-        { error: 'Nu poți face ofertă la propriul job' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Nu poți face ofertă la propriul job' }, { status: 400 });
     }
 
     // Verifică dacă ai deja o ofertă
     const existingOffer = await prisma.offer.findUnique({
       where: {
-        jobId_providerId: {  // Constraint unic compus
+        jobId_providerId: {
+          // Constraint unic compus
           jobId,
           providerId: user.id,
         },
@@ -955,10 +962,7 @@ export async function POST(
     });
 
     if (existingOffer) {
-      return NextResponse.json(
-        { error: 'Ai deja o ofertă pentru acest job' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Ai deja o ofertă pentru acest job' }, { status: 400 });
     }
 
     // 4. Creează oferta și notificarea în tranzacție
@@ -994,7 +998,6 @@ export async function POST(
 
     // 5. Trimite răspunsul
     return NextResponse.json(result, { status: 201 });
-
   } catch (error) {
     // Gestionare erori...
   }
@@ -1116,12 +1119,9 @@ function ChatPage() {
 
     // 2. Setează polling pentru mesaje noi
     //    (sau WebSocket dacă e configurat)
-    pollerRef.current = new MessagePoller(
-      conversationId,
-      (newMessages) => {
-        setMessages(prev => [...prev, ...newMessages]);
-      }
-    );
+    pollerRef.current = new MessagePoller(conversationId, (newMessages) => {
+      setMessages((prev) => [...prev, ...newMessages]);
+    });
     pollerRef.current.start(3000); // Poll la fiecare 3 secunde
 
     return () => {
@@ -1131,10 +1131,9 @@ function ChatPage() {
 
   async function loadMessages() {
     const token = await auth.currentUser?.getIdToken();
-    const response = await fetch(
-      `/api/conversations/${conversationId}/messages`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    const response = await fetch(`/api/conversations/${conversationId}/messages`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     const data = await response.json();
     setMessages(data);
 
@@ -1166,31 +1165,26 @@ async function sendMessage() {
     createdAt: new Date().toISOString(),
     isRead: false,
   };
-  setMessages(prev => [...prev, tempMessage]);
+  setMessages((prev) => [...prev, tempMessage]);
   setNewMessage('');
 
   try {
-    const response = await fetch(
-      `/api/conversations/${conversationId}/messages`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ content: newMessage }),
-      }
-    );
+    const response = await fetch(`/api/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ content: newMessage }),
+    });
 
     if (response.ok) {
       const savedMessage = await response.json();
       // Înlocuiește mesajul temporar cu cel real
-      setMessages(prev =>
-        prev.map(m => m.id === tempMessage.id ? savedMessage : m)
-      );
+      setMessages((prev) => prev.map((m) => (m.id === tempMessage.id ? savedMessage : m)));
     } else {
       // Eroare - elimină mesajul temporar
-      setMessages(prev => prev.filter(m => m.id !== tempMessage.id));
+      setMessages((prev) => prev.filter((m) => m.id !== tempMessage.id));
       // Arată eroare
     }
   } catch (error) {
@@ -1204,10 +1198,7 @@ async function sendMessage() {
 ```typescript
 // apps/web/src/app/api/conversations/[id]/messages/route.ts
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   const user = await authenticate(request);
   if (!user) return unauthorizedResponse();
 
@@ -1408,15 +1399,15 @@ $ pnpm build
 
 ### Când folosești ce?
 
-| Sarcina | Tehnologie | Fișier |
-|---------|------------|--------|
-| Formular UI | React + Tailwind | `page.tsx` |
-| Validare date | Zod | `validators.ts` |
-| Request HTTP | fetch | `page.tsx` sau hooks |
-| Autentificare | Firebase + middleware | `auth-middleware.ts` |
-| Interogare DB | Prisma | `route.ts` (API) |
-| State global | Zustand | `stores/*.ts` |
-| Cache & fetching | React Query | hooks sau components |
+| Sarcina          | Tehnologie            | Fișier               |
+| ---------------- | --------------------- | -------------------- |
+| Formular UI      | React + Tailwind      | `page.tsx`           |
+| Validare date    | Zod                   | `validators.ts`      |
+| Request HTTP     | fetch                 | `page.tsx` sau hooks |
+| Autentificare    | Firebase + middleware | `auth-middleware.ts` |
+| Interogare DB    | Prisma                | `route.ts` (API)     |
+| State global     | Zustand               | `stores/*.ts`        |
+| Cache & fetching | React Query           | hooks sau components |
 
 ### Flow-ul standard pentru orice feature:
 

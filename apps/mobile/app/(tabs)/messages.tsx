@@ -1,12 +1,5 @@
 import { useState } from 'react';
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  RefreshControl,
-} from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import { Link } from 'expo-router';
 import { Image } from 'expo-image';
 import { MessageSquare } from 'lucide-react-native';
@@ -79,7 +72,7 @@ export default function MessagesScreen() {
   const onRefresh = async () => {
     setRefreshing(true);
     // TODO: Fetch conversations from API
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
     setRefreshing(false);
   };
 
@@ -95,9 +88,7 @@ export default function MessagesScreen() {
             />
           ) : (
             <View style={styles.avatarPlaceholder}>
-              <Text style={styles.avatarText}>
-                {item.otherUser.name.charAt(0)}
-              </Text>
+              <Text style={styles.avatarText}>{item.otherUser.name.charAt(0)}</Text>
             </View>
           )}
           {!item.lastMessage.isRead && <View style={styles.unreadBadge} />}
@@ -114,10 +105,7 @@ export default function MessagesScreen() {
             {item.jobTitle}
           </Text>
           <Text
-            style={[
-              styles.lastMessage,
-              !item.lastMessage.isRead && styles.unreadMessage,
-            ]}
+            style={[styles.lastMessage, !item.lastMessage.isRead && styles.unreadMessage]}
             numberOfLines={1}
           >
             {item.lastMessage.content}

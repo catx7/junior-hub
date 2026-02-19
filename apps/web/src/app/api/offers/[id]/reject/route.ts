@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@localservices/database';
 import { verifyAuthToken } from '@/lib/auth-middleware';
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await verifyAuthToken(request);
     if (!user) {
@@ -30,10 +27,7 @@ export async function PATCH(
 
     // Only job poster can reject offers
     if (offer.job.posterId !== user.id) {
-      return NextResponse.json(
-        { error: 'Only the job poster can reject offers' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Only the job poster can reject offers' }, { status: 403 });
     }
 
     // Check if job is still open
@@ -74,9 +68,6 @@ export async function PATCH(
     return NextResponse.json({ message: 'Offer rejected successfully' });
   } catch (error) {
     console.error('Reject offer error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -74,12 +74,7 @@ export function debounce<T extends (...args: unknown[]) => unknown>(
   };
 }
 
-export function calculateDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
+export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371; // Earth's radius in kilometers
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
@@ -99,9 +94,7 @@ export function formatDistance(km: number): string {
   return `${km.toFixed(1)} km`;
 }
 
-export function getStarRating(
-  rating: number
-): { filled: number; half: boolean; empty: number } {
+export function getStarRating(rating: number): { filled: number; half: boolean; empty: number } {
   const filled = Math.floor(rating);
   const half = rating % 1 >= 0.5;
   const empty = 5 - filled - (half ? 1 : 0);

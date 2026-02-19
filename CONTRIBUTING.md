@@ -17,12 +17,12 @@ Welcome to the LocalServices project! This guide will help you get started as a 
 
 Before you begin, ensure you have the following installed:
 
-| Tool | Version | Installation |
-|------|---------|--------------|
-| Node.js | 20.x LTS | [nodejs.org](https://nodejs.org) or use `nvm install 20` |
-| pnpm | 9.x | `npm install -g pnpm@9` |
-| Docker | Latest | [docker.com](https://www.docker.com/products/docker-desktop) |
-| Git | Latest | [git-scm.com](https://git-scm.com) |
+| Tool    | Version  | Installation                                                 |
+| ------- | -------- | ------------------------------------------------------------ |
+| Node.js | 20.x LTS | [nodejs.org](https://nodejs.org) or use `nvm install 20`     |
+| pnpm    | 9.x      | `npm install -g pnpm@9`                                      |
+| Docker  | Latest   | [docker.com](https://www.docker.com/products/docker-desktop) |
+| Git     | Latest   | [git-scm.com](https://git-scm.com)                           |
 
 **For mobile development:**
 | Tool | Purpose |
@@ -62,6 +62,7 @@ pnpm dev
 ```
 
 After running these commands:
+
 - **Web app**: http://localhost:3000
 - **Mobile app**: Expo DevTools will open in browser
 - **Prisma Studio**: Run `pnpm db:studio` for database GUI
@@ -209,6 +210,7 @@ docs/api-documentation
 ### Before Submitting
 
 1. **Create a feature branch** from `develop`:
+
    ```bash
    git checkout develop
    git pull origin develop
@@ -218,6 +220,7 @@ docs/api-documentation
 2. **Make your changes** following the code style guidelines
 
 3. **Test your changes**:
+
    ```bash
    pnpm lint
    pnpm typecheck

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@localservices/database';
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const userId = params.id;
     const { searchParams } = new URL(request.url);
@@ -31,7 +28,7 @@ export async function GET(
             select: { id: true, name: true, avatar: true },
           },
           job: {
-            select: { id: true, title: true, category: true },
+            select: { id: true, title: true, category: true, posterId: true, providerId: true },
           },
         },
         orderBy: { createdAt: 'desc' },
@@ -74,9 +71,6 @@ export async function GET(
     });
   } catch (error) {
     console.error('Get user reviews error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

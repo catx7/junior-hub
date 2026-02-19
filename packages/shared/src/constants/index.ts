@@ -6,33 +6,55 @@
 export const SERVICE_CATEGORIES = {
   BABYSITTING: {
     id: 'BABYSITTING',
+    label: 'Babysitting',
     labelKey: 'categories.babysitting',
-    icon: 'baby',
+    icon: '👶',
     color: '#FF6B6B',
     commissionRate: 0.1,
   },
   HOUSE_CLEANING: {
     id: 'HOUSE_CLEANING',
+    label: 'House Cleaning',
     labelKey: 'categories.houseCleaning',
-    icon: 'home',
+    icon: '🏠',
     color: '#4ECDC4',
     commissionRate: 0.12,
   },
   LOCAL_FOOD: {
     id: 'LOCAL_FOOD',
+    label: 'Local Food',
     labelKey: 'categories.localFood',
-    icon: 'utensils',
+    icon: '🍽️',
     color: '#FFE66D',
     commissionRate: 0.15,
   },
   OTHER: {
     id: 'OTHER',
+    label: 'Other',
     labelKey: 'categories.other',
-    icon: 'ellipsis-h',
+    icon: '⋯',
     color: '#95A5A6',
     commissionRate: 0.1,
   },
 } as const;
+
+// Job categories (for job creation - excludes LOCAL_FOOD which is now standalone)
+export const JOB_CATEGORIES = {
+  BABYSITTING: SERVICE_CATEGORIES.BABYSITTING,
+  HOUSE_CLEANING: SERVICE_CATEGORIES.HOUSE_CLEANING,
+  OTHER: SERVICE_CATEGORIES.OTHER,
+} as const;
+
+// Local Food Categories (standalone marketplace)
+export const LOCAL_FOOD_CATEGORIES = [
+  'Prepared Meals',
+  'Baked Goods',
+  'Produce',
+  'Preserves',
+  'Dairy',
+  'Beverages',
+  'Other',
+] as const;
 
 // Job Statuses
 export const JOB_STATUSES = {

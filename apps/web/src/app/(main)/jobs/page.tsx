@@ -1,41 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
+import { SafeImage } from '@/components/ui/safe-image';
 import { useSearchParams } from 'next/navigation';
-import {
-  Search,
-  MapPin,
-  Filter,
-  SlidersHorizontal,
-  Grid,
-  List,
-  X,
-} from 'lucide-react';
-import {
-  Button,
-  Card,
-  CardContent,
-  Badge,
-  Input,
-  UserAvatar,
-  Skeleton,
-} from '@/components/ui';
+import { Search, MapPin, Filter, SlidersHorizontal, Grid, List, X } from 'lucide-react';
+import { Button, Card, CardContent, Badge, Input, UserAvatar, Skeleton } from '@/components/ui';
 import { useTranslation } from '@/hooks/use-translation';
+import { useAuth } from '@/hooks/use-auth';
 import { useJobs } from '@/hooks/use-jobs';
-import { SERVICE_CATEGORIES } from '@localservices/shared';
+import { SERVICE_CATEGORIES, JOB_CATEGORIES } from '@localservices/shared';
 import { formatPrice, formatRelativeTime, cn } from '@/lib/utils';
 import type { ServiceCategory, JobStatus } from '@localservices/shared';
 
+type JobType = 'SERVICE_REQUEST' | 'SERVICE_OFFERING';
+
 export default function JobsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          <Skeleton className="h-12 w-48" />
+        </div>
+      }
+    >
+      <JobsPageContent />
+    </Suspense>
+  );
+}
+
+function JobsPageContent() {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuth();
   const searchParams = useSearchParams();
 
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<ServiceCategory | ''>(
     (searchParams.get('category') as ServiceCategory) || ''
   );
+  const [jobType, setJobType] = useState<JobType | ''>('');
   const [minBudget, setMinBudget] = useState('');
   const [maxBudget, setMaxBudget] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
@@ -45,34 +48,35 @@ export default function JobsPage() {
   const { data, isLoading } = useJobs({
     status: 'OPEN' as JobStatus,
     category: category || undefined,
+    jobType: jobType || undefined,
     minBudget: minBudget ? Number(minBudget) : undefined,
     maxBudget: maxBudget ? Number(maxBudget) : undefined,
     search: search || undefined,
     sort: sortBy as 'createdAt' | 'budget',
     order: sortBy === 'budget' ? 'desc' : 'desc',
-  });
+  } as any);
 
-  const jobs = data?.data || [];
-  const categories = Object.values(SERVICE_CATEGORIES);
+  const allJobs = data?.data || [];
+  const jobs = isAuthenticated ? allJobs : allJobs.slice(0, 10);
+  const categories = Object.values(JOB_CATEGORIES);
 
   const clearFilters = () => {
     setCategory('');
+    setJobType('');
     setMinBudget('');
     setMaxBudget('');
     setSearch('');
   };
 
-  const hasFilters = category || minBudget || maxBudget || search;
+  const hasFilters = category || jobType || minBudget || maxBudget || search;
 
   return (
-    <div className="min-h-screen bg-muted/20">
+    <div className="bg-muted/20 min-h-screen">
       {/* Header */}
-      <div className="border-b bg-background">
+      <div className="bg-background border-b">
         <div className="container-custom py-8">
           <h1 className="mb-2 text-3xl font-bold">{t('jobs.title')}</h1>
-          <p className="text-muted-foreground">
-            Find the perfect service provider for your needs
-          </p>
+          <p className="text-muted-foreground">{t('jobs.browseSubtitle')}</p>
         </div>
       </div>
 
@@ -85,7 +89,7 @@ export default function JobsPage() {
               <div>
                 <h3 className="mb-3 font-semibold">{t('common.search')}</h3>
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
                   <Input
                     placeholder={t('jobs.searchPlaceholder')}
                     value={search}
@@ -102,7 +106,7 @@ export default function JobsPage() {
                   <button
                     onClick={() => setCategory('')}
                     className={cn(
-                      'flex w-full items-center rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted',
+                      'hover:bg-muted flex w-full items-center rounded-lg px-3 py-2 text-sm transition-colors',
                       !category && 'bg-muted font-medium'
                     )}
                   >
@@ -113,17 +117,50 @@ export default function JobsPage() {
                       key={cat.id}
                       onClick={() => setCategory(cat.id as ServiceCategory)}
                       className={cn(
-                        'flex w-full items-center rounded-lg px-3 py-2 text-sm transition-colors hover:bg-muted',
+                        'hover:bg-muted flex w-full items-center rounded-lg px-3 py-2 transition-colors',
                         category === cat.id && 'bg-muted font-medium'
                       )}
                     >
-                      <span
-                        className="mr-2 h-3 w-3 rounded-full"
-                        style={{ backgroundColor: cat.color }}
-                      />
-                      {t(cat.labelKey)}
+                      <span className="mr-2 text-lg">{cat.icon}</span>
+                      <span className="text-xs">{t(cat.labelKey)}</span>
                     </button>
                   ))}
+                </div>
+              </div>
+
+              {/* Job Type */}
+              <div>
+                <h3 className="mb-3 font-semibold">{t('jobs.type')}</h3>
+                <div className="space-y-2">
+                  <button
+                    onClick={() => setJobType('')}
+                    className={cn(
+                      'hover:bg-muted flex w-full items-center rounded-lg px-3 py-2 text-sm transition-colors',
+                      !jobType && 'bg-muted font-medium'
+                    )}
+                  >
+                    {t('jobs.allTypes')}
+                  </button>
+                  <button
+                    onClick={() => setJobType('SERVICE_REQUEST')}
+                    className={cn(
+                      'hover:bg-muted flex w-full items-center rounded-lg px-3 py-2 text-sm transition-colors',
+                      jobType === 'SERVICE_REQUEST' && 'bg-muted font-medium'
+                    )}
+                  >
+                    <span className="mr-2 inline-block h-2 w-2 rounded-full bg-blue-500" />
+                    {t('jobs.serviceRequests')}
+                  </button>
+                  <button
+                    onClick={() => setJobType('SERVICE_OFFERING')}
+                    className={cn(
+                      'hover:bg-muted flex w-full items-center rounded-lg px-3 py-2 text-sm transition-colors',
+                      jobType === 'SERVICE_OFFERING' && 'bg-muted font-medium'
+                    )}
+                  >
+                    <span className="mr-2 inline-block h-2 w-2 rounded-full bg-green-500" />
+                    {t('jobs.serviceOfferings')}
+                  </button>
                 </div>
               </div>
 
@@ -133,14 +170,14 @@ export default function JobsPage() {
                 <div className="flex gap-2">
                   <Input
                     type="number"
-                    placeholder="Min"
+                    placeholder={t('jobs.min')}
                     value={minBudget}
                     onChange={(e) => setMinBudget(e.target.value)}
                     className="w-full"
                   />
                   <Input
                     type="number"
-                    placeholder="Max"
+                    placeholder={t('jobs.max')}
                     value={maxBudget}
                     onChange={(e) => setMaxBudget(e.target.value)}
                     className="w-full"
@@ -150,13 +187,9 @@ export default function JobsPage() {
 
               {/* Clear Filters */}
               {hasFilters && (
-                <Button
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="w-full"
-                >
+                <Button variant="outline" onClick={clearFilters} className="w-full">
                   <X className="mr-2 h-4 w-4" />
-                  {t('common.clear')} Filters
+                  {t('jobs.clearFilters')}
                 </Button>
               )}
             </div>
@@ -174,7 +207,7 @@ export default function JobsPage() {
                   className="lg:hidden"
                 >
                   <Filter className="mr-2 h-4 w-4" />
-                  Filters
+                  {t('jobs.filters')}
                 </Button>
 
                 {/* Active Filters */}
@@ -183,9 +216,7 @@ export default function JobsPage() {
                     {category && (
                       <Badge variant="secondary" className="gap-1">
                         {t(
-                          SERVICE_CATEGORIES[
-                            category as keyof typeof SERVICE_CATEGORIES
-                          ]?.labelKey
+                          SERVICE_CATEGORIES[category as keyof typeof SERVICE_CATEGORIES]?.labelKey
                         )}
                         <button onClick={() => setCategory('')}>
                           <X className="h-3 w-3" />
@@ -214,14 +245,14 @@ export default function JobsPage() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="h-10 rounded-lg border bg-background px-3 text-sm"
+                  className="bg-background h-10 rounded-lg border px-3 text-sm"
                 >
                   <option value="createdAt">{t('jobs.sortNewest')}</option>
                   <option value="budget">{t('jobs.sortPriceHigh')}</option>
                 </select>
 
                 {/* View Toggle */}
-                <div className="flex rounded-lg border bg-background p-1">
+                <div className="bg-background flex rounded-lg border p-1">
                   <button
                     onClick={() => setViewMode('grid')}
                     className={cn(
@@ -250,7 +281,7 @@ export default function JobsPage() {
                 <div className="space-y-4">
                   {/* Search */}
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
                     <Input
                       placeholder={t('jobs.searchPlaceholder')}
                       value={search}
@@ -275,7 +306,8 @@ export default function JobsPage() {
                         variant={category === cat.id ? 'default' : 'outline'}
                         onClick={() => setCategory(cat.id as ServiceCategory)}
                       >
-                        {t(cat.labelKey)}
+                        <span className="mr-1">{cat.icon}</span>
+                        <span className="text-xs">{t(cat.labelKey)}</span>
                       </Button>
                     ))}
                   </div>
@@ -284,13 +316,13 @@ export default function JobsPage() {
                   <div className="flex gap-2">
                     <Input
                       type="number"
-                      placeholder="Min budget"
+                      placeholder={t('jobs.minBudget')}
                       value={minBudget}
                       onChange={(e) => setMinBudget(e.target.value)}
                     />
                     <Input
                       type="number"
-                      placeholder="Max budget"
+                      placeholder={t('jobs.maxBudget')}
                       value={maxBudget}
                       onChange={(e) => setMaxBudget(e.target.value)}
                     />
@@ -319,17 +351,13 @@ export default function JobsPage() {
                 ))}
               </div>
             ) : jobs.length === 0 ? (
-              <div className="rounded-xl border bg-background py-16 text-center">
-                <Search className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-                <h3 className="mb-2 text-lg font-semibold">
-                  {t('jobs.noJobsFound')}
-                </h3>
-                <p className="mb-4 text-muted-foreground">
-                  {t('jobs.noJobsFoundDesc')}
-                </p>
+              <div className="bg-background rounded-xl border py-16 text-center">
+                <Search className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                <h3 className="mb-2 text-lg font-semibold">{t('jobs.noJobsFound')}</h3>
+                <p className="text-muted-foreground mb-4">{t('jobs.noJobsFoundDesc')}</p>
                 {hasFilters && (
                   <Button variant="outline" onClick={clearFilters}>
-                    Clear Filters
+                    {t('jobs.clearFilters')}
                   </Button>
                 )}
               </div>
@@ -342,7 +370,14 @@ export default function JobsPage() {
                 )}
               >
                 {jobs.map((job: any) => (
-                  <Link key={job.id} href={`/jobs/${job.id}`}>
+                  <Link
+                    key={job.id}
+                    href={
+                      isAuthenticated
+                        ? `/jobs/${job.id}`
+                        : '/register?message=Create an account to view job details and make offers'
+                    }
+                  >
                     <Card
                       className={cn(
                         'group overflow-hidden transition-all hover:shadow-lg',
@@ -351,62 +386,94 @@ export default function JobsPage() {
                     >
                       <div
                         className={cn(
-                          'relative overflow-hidden bg-muted',
+                          'bg-muted relative overflow-hidden',
                           viewMode === 'grid' ? 'aspect-card' : 'h-32 w-48 shrink-0'
                         )}
                       >
-                        {job.images?.[0] ? (
-                          <Image
+                        {job.images?.[0]?.url ? (
+                          <SafeImage
                             src={job.images[0].url}
                             alt={job.title}
                             fill
                             className="object-cover transition-transform group-hover:scale-105"
+                            fallback={
+                              <div className="text-muted-foreground flex h-full w-full items-center justify-center">
+                                {t('jobs.noImage')}
+                              </div>
+                            }
                           />
                         ) : (
-                          <div className="flex h-full items-center justify-center text-muted-foreground">
-                            No image
+                          <div className="text-muted-foreground flex h-full items-center justify-center">
+                            {t('jobs.noImage')}
                           </div>
                         )}
                         {job.isPromoted && (
-                          <Badge
-                            className="absolute left-3 top-3"
-                            variant="default"
-                          >
+                          <Badge className="absolute left-3 top-3" variant="default">
                             {t('jobs.featured')}
                           </Badge>
                         )}
                       </div>
-                      <CardContent
-                        className={cn('p-4', viewMode === 'list' && 'flex-1')}
-                      >
-                        <div className="mb-2 flex items-start justify-between">
-                          <Badge
-                            variant="outline"
-                            style={{
-                              borderColor:
-                                SERVICE_CATEGORIES[
-                                  job.category as keyof typeof SERVICE_CATEGORIES
-                                ]?.color,
-                              color:
-                                SERVICE_CATEGORIES[
-                                  job.category as keyof typeof SERVICE_CATEGORIES
-                                ]?.color,
-                            }}
-                          >
-                            {t(
-                              SERVICE_CATEGORIES[
-                                job.category as keyof typeof SERVICE_CATEGORIES
-                              ]?.labelKey || 'categories.other'
-                            )}
-                          </Badge>
-                          <span className="text-lg font-semibold text-primary">
-                            {formatPrice(Number(job.budget), job.currency)}
+                      <CardContent className={cn('p-4', viewMode === 'list' && 'flex-1')}>
+                        <div className="mb-2 flex flex-wrap items-start justify-between gap-1">
+                          <div className="flex flex-wrap gap-1">
+                            <Badge
+                              className={
+                                job.jobType === 'SERVICE_OFFERING'
+                                  ? 'bg-green-600 text-xs'
+                                  : 'bg-blue-600 text-xs'
+                              }
+                            >
+                              {job.jobType === 'SERVICE_OFFERING'
+                                ? t('jobs.offering')
+                                : t('jobs.request')}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              style={{
+                                borderColor:
+                                  SERVICE_CATEGORIES[
+                                    job.category as keyof typeof SERVICE_CATEGORIES
+                                  ]?.color,
+                                color:
+                                  SERVICE_CATEGORIES[
+                                    job.category as keyof typeof SERVICE_CATEGORIES
+                                  ]?.color,
+                              }}
+                            >
+                              <span className="mr-1">
+                                {
+                                  SERVICE_CATEGORIES[
+                                    job.category as keyof typeof SERVICE_CATEGORIES
+                                  ]?.icon
+                                }
+                              </span>
+                              <span className="text-xs">
+                                {t(
+                                  SERVICE_CATEGORIES[
+                                    job.category as keyof typeof SERVICE_CATEGORIES
+                                  ]?.labelKey || 'categories.other'
+                                )}
+                              </span>
+                            </Badge>
+                          </div>
+                          <span className="text-primary text-lg font-semibold">
+                            {job.budget
+                              ? `${formatPrice(Number(job.budget), job.currency)}${
+                                  job.pricingType === 'HOURLY'
+                                    ? t('jobs.perHrSuffix')
+                                    : job.pricingType === 'PER_LOCATION'
+                                      ? t('jobs.perVisitSuffix')
+                                      : ''
+                                }`
+                              : job.jobType === 'SERVICE_OFFERING'
+                                ? t('jobs.contactForPrice')
+                                : t('jobs.openBudget')}
                           </span>
                         </div>
-                        <h3 className="mb-1 line-clamp-2 font-semibold group-hover:text-primary">
+                        <h3 className="group-hover:text-primary mb-1 line-clamp-2 font-semibold">
                           {job.title}
                         </h3>
-                        <div className="mb-3 flex items-center text-sm text-muted-foreground">
+                        <div className="text-muted-foreground mb-3 flex items-center text-sm">
                           <MapPin className="mr-1 h-3 w-3" />
                           {job.location}
                         </div>
@@ -417,11 +484,11 @@ export default function JobsPage() {
                               name={job.poster?.name || 'User'}
                               size="sm"
                             />
-                            <span className="text-sm text-muted-foreground">
+                            <span className="text-muted-foreground text-sm">
                               {job.poster?.name}
                             </span>
                           </div>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-muted-foreground text-xs">
                             {formatRelativeTime(job.createdAt)}
                           </span>
                         </div>
@@ -432,10 +499,21 @@ export default function JobsPage() {
               </div>
             )}
 
+            {/* Sign up prompt for guests */}
+            {!isAuthenticated && jobs.length > 0 && (
+              <div className="mt-8 rounded-xl border bg-gradient-to-r from-blue-50 to-indigo-50 p-8 text-center">
+                <h3 className="mb-2 text-lg font-semibold">{t('jobs.wantToSeeMore')}</h3>
+                <p className="text-muted-foreground mb-4">{t('jobs.signUpBrowseDesc')}</p>
+                <Link href="/register?message=Create an account to browse all jobs and make offers">
+                  <Button>{t('jobs.signUpFree')}</Button>
+                </Link>
+              </div>
+            )}
+
             {/* Pagination placeholder */}
-            {jobs.length > 0 && (
+            {isAuthenticated && jobs.length > 0 && (
               <div className="mt-8 flex justify-center">
-                <Button variant="outline">Load More</Button>
+                <Button variant="outline">{t('jobs.loadMore')}</Button>
               </div>
             )}
           </div>

@@ -1,32 +1,33 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  transpilePackages: ['@localservices/shared', '@localservices/database'],
+  transpilePackages: ['@localservices/shared'],
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'res.cloudinary.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'graph.facebook.com',
+        hostname: '**',
       },
     ],
   },
   experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'bcrypt'],
+    serverComponentsExternalPackages: ['@prisma/client', '@localservices/database', 'bcrypt'],
+  },
+  outputFileTracingIncludes: {
+    '/api/**': ['./node_modules/.prisma/**/*'],
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push('undici');
+    }
+    return config;
   },
   async headers() {
     return [
+      {
+        source: '/:path*',
+        headers: [{ key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' }],
+      },
       {
         source: '/api/:path*',
         headers: [

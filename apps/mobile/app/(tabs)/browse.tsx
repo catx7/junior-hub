@@ -11,7 +11,13 @@ import {
 import { Link, useLocalSearchParams } from 'expo-router';
 import { Image } from 'expo-image';
 import { Search, MapPin, Filter, SlidersHorizontal } from 'lucide-react-native';
-import { COLORS, SERVICE_CATEGORIES, SPACING, BORDER_RADIUS, TYPOGRAPHY } from '@localservices/shared';
+import {
+  COLORS,
+  SERVICE_CATEGORIES,
+  SPACING,
+  BORDER_RADIUS,
+  TYPOGRAPHY,
+} from '@localservices/shared';
 
 export default function BrowseScreen() {
   const params = useLocalSearchParams();
@@ -23,9 +29,14 @@ export default function BrowseScreen() {
     { id: '', label: 'All' },
     ...Object.values(SERVICE_CATEGORIES).map((c) => ({
       id: c.id,
-      label: c.id === 'BABYSITTING' ? 'Babysitting' :
-             c.id === 'HOUSE_CLEANING' ? 'Cleaning' :
-             c.id === 'LOCAL_FOOD' ? 'Food' : 'Other',
+      label:
+        c.id === 'BABYSITTING'
+          ? 'Babysitting'
+          : c.id === 'HOUSE_CLEANING'
+            ? 'Cleaning'
+            : c.id === 'LOCAL_FOOD'
+              ? 'Food'
+              : 'Other',
     })),
   ];
 
@@ -84,7 +95,7 @@ export default function BrowseScreen() {
     setRefreshing(false);
   };
 
-  const renderJob = ({ item }: { item: typeof jobs[0] }) => (
+  const renderJob = ({ item }: { item: (typeof jobs)[0] }) => (
     <Link href={`/job/${item.id}`} asChild>
       <TouchableOpacity style={styles.jobCard}>
         <Image
@@ -100,8 +111,7 @@ export default function BrowseScreen() {
                 styles.categoryBadge,
                 {
                   backgroundColor: `${
-                    SERVICE_CATEGORIES[item.category as keyof typeof SERVICE_CATEGORIES]
-                      ?.color
+                    SERVICE_CATEGORIES[item.category as keyof typeof SERVICE_CATEGORIES]?.color
                   }20`,
                 },
               ]}
@@ -111,13 +121,15 @@ export default function BrowseScreen() {
                   styles.categoryBadgeText,
                   {
                     color:
-                      SERVICE_CATEGORIES[item.category as keyof typeof SERVICE_CATEGORIES]
-                        ?.color,
+                      SERVICE_CATEGORIES[item.category as keyof typeof SERVICE_CATEGORIES]?.color,
                   },
                 ]}
               >
-                {item.category === 'BABYSITTING' ? 'Babysitting' :
-                 item.category === 'HOUSE_CLEANING' ? 'Cleaning' : 'Food'}
+                {item.category === 'BABYSITTING'
+                  ? 'Babysitting'
+                  : item.category === 'HOUSE_CLEANING'
+                    ? 'Cleaning'
+                    : 'Food'}
               </Text>
             </View>
             <Text style={styles.jobBudget}>${item.budget}</Text>
@@ -132,9 +144,7 @@ export default function BrowseScreen() {
           <View style={styles.jobFooter}>
             <View style={styles.posterInfo}>
               <View style={styles.posterAvatar}>
-                <Text style={styles.posterAvatarText}>
-                  {item.posterName.charAt(0)}
-                </Text>
+                <Text style={styles.posterAvatarText}>{item.posterName.charAt(0)}</Text>
               </View>
               <Text style={styles.posterName}>{item.posterName}</Text>
             </View>
@@ -212,9 +222,7 @@ export default function BrowseScreen() {
           <View style={styles.emptyState}>
             <Search size={48} color={COLORS.textTertiary} />
             <Text style={styles.emptyTitle}>No jobs found</Text>
-            <Text style={styles.emptyText}>
-              Try adjusting your search or filters
-            </Text>
+            <Text style={styles.emptyText}>Try adjusting your search or filters</Text>
           </View>
         }
       />

@@ -10,26 +10,20 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: 'LocalServices - Find Local Service Providers',
-    template: '%s | LocalServices',
+    default: 'JuniorHub - Find Local Service Providers',
+    template: '%s | JuniorHub',
   },
   description:
     'Connect with trusted local service providers for babysitting, house cleaning, local food, and more. Post jobs or offer your services.',
-  keywords: [
-    'local services',
-    'babysitter',
-    'house cleaning',
-    'local food',
-    'service marketplace',
-  ],
-  authors: [{ name: 'LocalServices' }],
-  creator: 'LocalServices',
+  keywords: ['local services', 'babysitter', 'house cleaning', 'local food', 'service marketplace'],
+  authors: [{ name: 'JuniorHub' }],
+  creator: 'JuniorHub',
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://localservices.com',
-    siteName: 'LocalServices',
-    title: 'LocalServices - Find Local Service Providers',
+    url: 'https://juniorhub.com',
+    siteName: 'JuniorHub',
+    title: 'JuniorHub - Find Local Service Providers',
     description:
       'Connect with trusted local service providers for babysitting, house cleaning, local food, and more.',
     images: [
@@ -37,13 +31,13 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'LocalServices',
+        alt: 'JuniorHub',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'LocalServices - Find Local Service Providers',
+    title: 'JuniorHub - Find Local Service Providers',
     description:
       'Connect with trusted local service providers for babysitting, house cleaning, local food, and more.',
     images: ['/og-image.png'],
@@ -66,13 +60,17 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossOrigin=""
+        />
+      </head>
       <body className={`${inter.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
       </body>

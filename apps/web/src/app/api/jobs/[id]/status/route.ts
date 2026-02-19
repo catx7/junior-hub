@@ -4,13 +4,10 @@ import { prisma } from '@localservices/database';
 import { verifyAuthToken } from '@/lib/auth-middleware';
 
 const updateStatusSchema = z.object({
-  status: z.enum(['OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']),
+  status: z.enum(['OPEN', 'IN_PROGRESS', 'PENDING_COMPLETION', 'COMPLETED', 'CANCELLED']),
 });
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     const user = await verifyAuthToken(request);
     if (!user) {
@@ -29,6 +26,7 @@ export async function PATCH(
         status: true,
         posterId: true,
         providerId: true,
+        scheduledAt: true,
       },
     });
 
@@ -48,7 +46,8 @@ export async function PATCH(
     const validTransitions: Record<string, string[]> = {
       DRAFT: ['OPEN', 'CANCELLED'],
       OPEN: ['IN_PROGRESS', 'CANCELLED'],
-      IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
+      IN_PROGRESS: ['PENDING_COMPLETION', 'CANCELLED'],
+      PENDING_COMPLETION: ['COMPLETED', 'IN_PROGRESS', 'CANCELLED'],
       COMPLETED: [],
       CANCELLED: [],
     };
@@ -60,19 +59,41 @@ export async function PATCH(
       );
     }
 
-    // Additional validation based on who is updating
+    // Permission checks
     if (status === 'CANCELLED' && !isPoster) {
+      return NextResponse.json({ error: 'Only the job poster can cancel a job' }, { status: 403 });
+    }
+
+    if (status === 'PENDING_COMPLETION' && !isProvider) {
       return NextResponse.json(
-        { error: 'Only the job poster can cancel a job' },
+        { error: 'Only the provider can mark a job as complete' },
         { status: 403 }
       );
     }
 
     if (status === 'COMPLETED' && !isPoster) {
       return NextResponse.json(
-        { error: 'Only the job poster can mark a job as completed' },
+        { error: 'Only the job poster can confirm completion' },
         { status: 403 }
       );
+    }
+
+    // Poster can reject completion (send back to IN_PROGRESS from PENDING_COMPLETION)
+    if (status === 'IN_PROGRESS' && job.status === 'PENDING_COMPLETION' && !isPoster) {
+      return NextResponse.json(
+        { error: 'Only the job poster can reject completion' },
+        { status: 403 }
+      );
+    }
+
+    // Date check: cannot mark as complete before scheduled date
+    if (status === 'PENDING_COMPLETION' && job.scheduledAt) {
+      if (new Date(job.scheduledAt) > new Date()) {
+        return NextResponse.json(
+          { error: 'Job cannot be marked complete before the scheduled date' },
+          { status: 400 }
+        );
+      }
     }
 
     // Update the job status and send notifications
@@ -87,18 +108,28 @@ export async function PATCH(
 
       // Determine notification message based on status
       const notificationMessages: Record<string, { title: string; body: string }> = {
+        PENDING_COMPLETION: {
+          title: 'Completion requested',
+          body: `${user.name} marked "${job.title}" as complete. Please review and confirm.`,
+        },
         COMPLETED: {
           title: 'Job completed!',
-          body: `The job "${job.title}" has been marked as completed`,
+          body: `The job "${job.title}" has been confirmed as completed`,
         },
         CANCELLED: {
           title: 'Job cancelled',
           body: `The job "${job.title}" has been cancelled`,
         },
-        IN_PROGRESS: {
-          title: 'Job started',
-          body: `The job "${job.title}" is now in progress`,
-        },
+        IN_PROGRESS:
+          job.status === 'PENDING_COMPLETION'
+            ? {
+                title: 'Completion not confirmed',
+                body: `The poster sent "${job.title}" back to in progress`,
+              }
+            : {
+                title: 'Job started',
+                body: `The job "${job.title}" is now in progress`,
+              },
       };
 
       const notification = notificationMessages[status];
@@ -139,9 +170,6 @@ export async function PATCH(
       return NextResponse.json({ errors: error.errors }, { status: 400 });
     }
     console.error('Update job status error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

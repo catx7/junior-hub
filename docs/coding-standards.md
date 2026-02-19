@@ -230,14 +230,14 @@ src/
 
 ### File Naming
 
-| Type | Convention | Example |
-|------|------------|---------|
-| Components | kebab-case.tsx | `job-card.tsx` |
-| Hooks | use-*.ts | `use-jobs.ts` |
-| Utilities | kebab-case.ts | `format-date.ts` |
-| Types | kebab-case.ts | `job-types.ts` |
-| Constants | kebab-case.ts | `api-routes.ts` |
-| Stores | *-store.ts | `auth-store.ts` |
+| Type       | Convention     | Example          |
+| ---------- | -------------- | ---------------- |
+| Components | kebab-case.tsx | `job-card.tsx`   |
+| Hooks      | use-\*.ts      | `use-jobs.ts`    |
+| Utilities  | kebab-case.ts  | `format-date.ts` |
+| Types      | kebab-case.ts  | `job-types.ts`   |
+| Constants  | kebab-case.ts  | `api-routes.ts`  |
+| Stores     | \*-store.ts    | `auth-store.ts`  |
 
 ### Import Order
 
@@ -277,9 +277,9 @@ const userName = 'John';
 const isActive = true;
 const jobCount = 42;
 
-function getUserById(id: string): User { }
-async function fetchJobs(): Promise<Job[]> { }
-const handleSubmit = () => { };
+function getUserById(id: string): User {}
+async function fetchJobs(): Promise<Job[]> {}
+const handleSubmit = () => {};
 ```
 
 ### Constants
@@ -295,10 +295,13 @@ const DEFAULT_PAGE_SIZE = 20;
 
 ```typescript
 // PascalCase for components, types, interfaces, enums
-function UserProfile() { }
-interface UserData { }
+function UserProfile() {}
+interface UserData {}
 type JobStatus = 'open' | 'closed';
-enum PaymentMethod { CreditCard, PayPal }
+enum PaymentMethod {
+  CreditCard,
+  PayPal,
+}
 ```
 
 ### Boolean Variables
@@ -318,8 +321,8 @@ Prefix with `handle` or `on`:
 
 ```typescript
 // In component
-const handleSubmit = () => { };
-const handleInputChange = (e: ChangeEvent) => { };
+const handleSubmit = () => {};
+const handleInputChange = (e: ChangeEvent) => {};
 
 // As props
 interface Props {
@@ -350,14 +353,16 @@ Prettier handles formatting. Key settings:
 
 ```typescript
 // BAD
-if (user.role === 1) { }
+if (user.role === 1) {
+}
 const delay = 5000;
 
 // GOOD
 const ADMIN_ROLE = 1;
 const NOTIFICATION_DELAY_MS = 5000;
 
-if (user.role === ADMIN_ROLE) { }
+if (user.role === ADMIN_ROLE) {
+}
 const delay = NOTIFICATION_DELAY_MS;
 ```
 
@@ -401,7 +406,7 @@ const { user } = props;
 const { name, email } = user;
 
 // Or inline
-function UserCard({ user: { name, email } }: Props) { }
+function UserCard({ user: { name, email } }: Props) {}
 ```
 
 ---
@@ -443,16 +448,16 @@ POST   /api/offers/:id/accept
 
 ### Status Codes
 
-| Code | Usage |
-|------|-------|
-| 200 | Success (GET, PATCH) |
-| 201 | Created (POST) |
-| 204 | No Content (DELETE) |
-| 400 | Bad Request (validation) |
-| 401 | Unauthorized |
-| 403 | Forbidden |
-| 404 | Not Found |
-| 500 | Server Error |
+| Code | Usage                    |
+| ---- | ------------------------ |
+| 200  | Success (GET, PATCH)     |
+| 201  | Created (POST)           |
+| 204  | No Content (DELETE)      |
+| 400  | Bad Request (validation) |
+| 401  | Unauthorized             |
+| 403  | Forbidden                |
+| 404  | Not Found                |
+| 500  | Server Error             |
 
 ---
 
@@ -549,9 +554,9 @@ src/
 
 ```typescript
 describe('JobCard', () => {
-  it('should render job title', () => { });
-  it('should call onSelect when clicked', () => { });
-  it('should show loading state when isLoading is true', () => { });
+  it('should render job title', () => {});
+  it('should call onSelect when clicked', () => {});
+  it('should show loading state when isLoading is true', () => {});
 });
 ```
 
@@ -645,7 +650,7 @@ const { data } = useQuery({
   queryKey: ['jobs', filters],
   queryFn: () => fetchJobs(filters),
   staleTime: 1000 * 60 * 5, // 5 minutes
-  gcTime: 1000 * 60 * 30,   // 30 minutes
+  gcTime: 1000 * 60 * 30, // 30 minutes
 });
 ```
 
@@ -681,7 +686,6 @@ Always paginate large lists:
 const { data, fetchNextPage, hasNextPage } = useInfiniteQuery({
   queryKey: ['jobs'],
   queryFn: ({ pageParam = 0 }) => fetchJobs({ offset: pageParam }),
-  getNextPageParam: (lastPage) =>
-    lastPage.hasMore ? lastPage.nextOffset : undefined,
+  getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),
 });
 ```

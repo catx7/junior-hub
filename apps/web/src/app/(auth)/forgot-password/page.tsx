@@ -35,21 +35,19 @@ export default function ForgotPasswordPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="bg-muted/50 flex min-h-screen items-center justify-center px-4">
         <Card className="w-full max-w-md p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-8 h-8 text-green-600" />
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
+            <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Check Your Email</h1>
-          <p className="text-gray-600 mb-6">
-            We have sent a password reset link to <strong>{email}</strong>. Please check your inbox and follow the instructions.
+          <h1 className="text-foreground mb-2 text-2xl font-bold">Check Your Email</h1>
+          <p className="text-muted-foreground mb-6">
+            We have sent a password reset link to <strong>{email}</strong>. Please check your inbox
+            and follow the instructions.
           </p>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-muted-foreground mb-6 text-sm">
             Did not receive the email? Check your spam folder or{' '}
-            <button
-              onClick={() => setIsSubmitted(false)}
-              className="text-primary hover:underline"
-            >
+            <button onClick={() => setIsSubmitted(false)} className="text-primary hover:underline">
               try again
             </button>
           </p>
@@ -62,18 +60,18 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="bg-muted/50 flex min-h-screen items-center justify-center px-4">
       <Card className="w-full max-w-md p-8">
         <Link
           href="/login"
-          className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 mb-6"
+          className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center text-sm"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="mr-2 h-4 w-4" />
           Back to login
         </Link>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Forgot Password?</h1>
-        <p className="text-gray-600 mb-6">
+        <h1 className="text-foreground mb-2 text-2xl font-bold">Forgot Password?</h1>
+        <p className="text-muted-foreground mb-6">
           No worries! Enter your email address and we will send you a link to reset your password.
         </p>
 
@@ -81,7 +79,7 @@ export default function ForgotPasswordPage() {
           <div>
             <Label htmlFor="email">Email Address</Label>
             <div className="relative mt-2">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Mail className="text-muted-foreground absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2" />
               <Input
                 id="email"
                 type="email"
@@ -98,7 +96,7 @@ export default function ForgotPasswordPage() {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-gray-600 mt-6">
+        <p className="text-muted-foreground mt-6 text-center text-sm">
           Remember your password?{' '}
           <Link href="/login" className="text-primary font-medium hover:underline">
             Sign in

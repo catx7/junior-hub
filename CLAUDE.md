@@ -1,8 +1,9 @@
-# LocalServices - Claude Code Guide
+# JuniorHub - Claude Code Guide
 
 ## Quick Reference
 
 ### Essential Commands
+
 ```bash
 # Development
 pnpm dev              # Start all apps (web + mobile)
@@ -27,6 +28,7 @@ pnpm db:seed          # Seed with test data
 ```
 
 ### Local Development Setup
+
 ```bash
 docker-compose up -d   # Start PostgreSQL + Redis
 pnpm install           # Install dependencies
@@ -38,12 +40,14 @@ pnpm dev               # Start development
 ## Architecture Overview
 
 **Monorepo** using Turborepo with pnpm workspaces:
+
 - `apps/web` - Next.js 14 (PWA + API routes)
 - `apps/mobile` - React Native Expo (iOS + Android)
 - `packages/shared` - Shared types, validators, i18n, constants
 - `packages/database` - Prisma schema and client
 
 **Tech Stack:**
+
 - TypeScript strict mode throughout
 - Prisma ORM with PostgreSQL
 - Firebase Auth (Google, Facebook, Email)
@@ -54,26 +58,33 @@ pnpm dev               # Start development
 ## Key Patterns
 
 ### API Routes (Next.js)
+
 Located in `apps/web/src/app/api/`. Follow this pattern:
+
 1. Authenticate with `verifyAuthToken()` from `lib/auth-middleware.ts`
 2. Validate input with Zod schemas from `@localservices/shared`
 3. Use Prisma for database operations
 4. Return JSON responses with appropriate status codes
 
 ### Shared Code
+
 Import from `@localservices/shared`:
+
 - Types: `User`, `Job`, `Offer`, `Review`, etc.
 - Validators: `createJobSchema`, `createOfferSchema`, etc.
 - Constants: `COLORS`, `SERVICE_CATEGORIES`, `SPACING`
 - i18n: `translations.en`, `translations.ro`
 
 ### Component Structure
+
 - Web: `apps/web/src/components/ui/` for base components
 - Mobile: `apps/mobile/components/` with React Native primitives
 - Both use the shared color palette and spacing constants
 
 ### Database Schema
+
 Key models in `packages/database/prisma/schema.prisma`:
+
 - `User` - Profiles with Firebase UID linking
 - `Job` - Service requests with status workflow
 - `Offer` - Provider bids on jobs
@@ -82,13 +93,13 @@ Key models in `packages/database/prisma/schema.prisma`:
 
 ## File Locations
 
-| Purpose | Web | Mobile |
-|---------|-----|--------|
-| Pages/Screens | `apps/web/src/app/` | `apps/mobile/app/` |
-| Components | `apps/web/src/components/` | `apps/mobile/components/` |
-| API Routes | `apps/web/src/app/api/` | N/A (uses web API) |
-| Hooks | `apps/web/src/hooks/` | `apps/mobile/hooks/` |
-| Stores | `apps/web/src/stores/` | `apps/mobile/stores/` |
+| Purpose       | Web                        | Mobile                    |
+| ------------- | -------------------------- | ------------------------- |
+| Pages/Screens | `apps/web/src/app/`        | `apps/mobile/app/`        |
+| Components    | `apps/web/src/components/` | `apps/mobile/components/` |
+| API Routes    | `apps/web/src/app/api/`    | N/A (uses web API)        |
+| Hooks         | `apps/web/src/hooks/`      | `apps/mobile/hooks/`      |
+| Stores        | `apps/web/src/stores/`     | `apps/mobile/stores/`     |
 
 ## Important Conventions
 
@@ -109,6 +120,66 @@ Key models in `packages/database/prisma/schema.prisma`:
 ## Environment Variables
 
 Required in `.env.local` (see `.env.example`):
-- `DATABASE_URL` - PostgreSQL connection string
-- `FIREBASE_*` - Firebase project credentials
-- `NEXT_PUBLIC_*` - Client-side Firebase config
+
+```bash
+# Database
+DATABASE_URL="postgresql://..."
+
+# Firebase Auth
+NEXT_PUBLIC_FIREBASE_API_KEY="..."
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="..."
+NEXT_PUBLIC_FIREBASE_PROJECT_ID="..."
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="..."
+NEXT_PUBLIC_FIREBASE_APP_ID="..."
+NEXT_PUBLIC_FIREBASE_VAPID_KEY="..." # For push notifications
+
+# Firebase Admin SDK
+FIREBASE_ADMIN_PROJECT_ID="..."
+FIREBASE_ADMIN_PRIVATE_KEY="..."
+FIREBASE_ADMIN_CLIENT_EMAIL="..."
+
+# App
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
+
+## New Features
+
+### 🎉 Kids Events
+
+- **Location**: `/kids-events`
+- **Purpose**: Discover community events for children
+- **Categories**: Art, Sports, Education, Performing Arts
+
+### 👕 Kids Clothes Marketplace
+
+- **Location**: `/kids-clothes`
+- **Purpose**: Buy, sell, donate kids clothes
+- **Modes**: Sell (set price) or Donate (free)
+
+### 🛡️ Admin Dashboard
+
+- **Location**: `/admin` (requires ADMIN role)
+- **Features**:
+  - User management (edit roles, delete users)
+  - Job management (change status, moderate)
+  - Review management
+  - Push notifications to users
+  - Provider verification system
+
+## Admin Setup
+
+**Make yourself admin:**
+
+```bash
+# Using Prisma Studio
+pnpm db:studio
+# Find your user → Change role to 'ADMIN'
+
+# Or using SQL
+psql $DATABASE_URL
+UPDATE "User" SET role = 'ADMIN' WHERE email = 'your@email.com';
+```
+
+**Access admin dashboard:** Navigate to `/admin`
+
+See [Admin Setup Guide](./docs/admin-setup.md) for details.

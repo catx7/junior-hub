@@ -4,183 +4,159 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { MessageSquare, Search } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { conversationsApi } from '@/lib/api';
+import { useTranslation } from '@/hooks/use-translation';
 
-interface Conversation {
-  id: string;
-  jobTitle: string;
-  otherUser: {
-    id: string;
-    name: string;
-    avatar: string | null;
-  };
-  lastMessage: {
-    content: string;
-    createdAt: string;
-    isRead: boolean;
-  };
+// Helper to format relative time
+function formatRelativeTime(date: string | Date): string {
+  const now = new Date();
+  const then = new Date(date);
+  const diffInSeconds = Math.floor((now.getTime() - then.getTime()) / 1000);
+
+  if (diffInSeconds < 60) return 'just now';
+  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+  if (diffInSeconds < 172800) return 'Yesterday';
+  if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+
+  return then.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
 export default function MessagesPage() {
   const [search, setSearch] = useState('');
+  const { t } = useTranslation();
 
-  // Mock data - replace with actual API call
-  const conversations: Conversation[] = [
-    {
-      id: '1',
-      jobTitle: 'Babysitter needed for 2 kids',
-      otherUser: {
-        id: 'u1',
-        name: 'Jane Smith',
-        avatar: null,
-      },
-      lastMessage: {
-        content: 'Hi! I am interested in the babysitting job. I have 5 years of experience.',
-        createdAt: '2 min ago',
-        isRead: false,
-      },
-    },
-    {
-      id: '2',
-      jobTitle: 'Deep cleaning for apartment',
-      otherUser: {
-        id: 'u2',
-        name: 'Mike Johnson',
-        avatar: null,
-      },
-      lastMessage: {
-        content: 'When would you like me to come? I am available this week.',
-        createdAt: '1 hour ago',
-        isRead: true,
-      },
-    },
-    {
-      id: '3',
-      jobTitle: 'Homemade Romanian dinner',
-      otherUser: {
-        id: 'u3',
-        name: 'Elena Popescu',
-        avatar: null,
-      },
-      lastMessage: {
-        content: 'I can prepare sarmale and mici for your dinner party!',
-        createdAt: 'Yesterday',
-        isRead: true,
-      },
-    },
-    {
-      id: '4',
-      jobTitle: 'Weekly house cleaning',
-      otherUser: {
-        id: 'u4',
-        name: 'Sarah Williams',
-        avatar: null,
-      },
-      lastMessage: {
-        content: 'Thank you for choosing me! See you next Monday.',
-        createdAt: '2 days ago',
-        isRead: true,
-      },
-    },
-  ];
+  const { data, isLoading } = useQuery({
+    queryKey: ['conversations'],
+    queryFn: () => conversationsApi.list(),
+  });
 
-  const filteredConversations = conversations.filter(
-    (conv) =>
-      conv.otherUser.name.toLowerCase().includes(search.toLowerCase()) ||
-      conv.jobTitle.toLowerCase().includes(search.toLowerCase())
-  );
+  const conversations = data?.conversations || [];
+
+  const filteredConversations = conversations.filter((conv: any) => {
+    const searchLower = search.toLowerCase();
+    return (
+      conv.participant?.name?.toLowerCase().includes(searchLower) ||
+      conv.job?.title?.toLowerCase().includes(searchLower)
+    );
+  });
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-3xl mx-auto px-4">
+    <div className="bg-muted/50 min-h-screen py-8">
+      <div className="mx-auto max-w-3xl px-4">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Messages</h1>
-          <p className="text-gray-600 mt-1">
-            Your conversations with service providers and clients
-          </p>
+          <h1 className="text-foreground text-2xl font-bold">{t('messages.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('messages.subtitle')}</p>
         </div>
 
         {/* Search */}
         <div className="relative mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="text-muted-foreground absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search conversations..."
+            placeholder={t('messages.searchConversations')}
             className="pl-10"
           />
         </div>
 
         {/* Conversations List */}
-        {filteredConversations.length > 0 ? (
+        {isLoading ? (
           <Card className="divide-y">
-            {filteredConversations.map((conversation) => (
-              <Link
-                key={conversation.id}
-                href={`/messages/${conversation.id}`}
-                className="flex items-start gap-4 p-4 hover:bg-gray-50 transition"
-              >
-                <div className="relative">
-                  <Avatar className="w-14 h-14">
-                    {conversation.otherUser.avatar ? (
-                      <Image
-                        src={conversation.otherUser.avatar}
-                        alt={conversation.otherUser.name}
-                        fill
-                      />
-                    ) : (
-                      <div className="w-full h-full bg-primary flex items-center justify-center text-white text-lg font-bold">
-                        {conversation.otherUser.name.charAt(0)}
-                      </div>
-                    )}
-                  </Avatar>
-                  {!conversation.lastMessage.isRead && (
-                    <span className="absolute top-0 right-0 w-3 h-3 bg-primary rounded-full border-2 border-white" />
-                  )}
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="flex items-start gap-4 p-4">
+                <Skeleton className="h-14 w-14 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-5 w-32" />
+                  <Skeleton className="h-4 w-48" />
+                  <Skeleton className="h-4 w-full" />
                 </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className={`font-semibold ${
-                      !conversation.lastMessage.isRead ? 'text-gray-900' : 'text-gray-700'
-                    }`}>
-                      {conversation.otherUser.name}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {conversation.lastMessage.createdAt}
-                    </span>
-                  </div>
-                  <p className="text-sm text-primary truncate mb-1">
-                    {conversation.jobTitle}
-                  </p>
-                  <p className={`text-sm truncate ${
-                    !conversation.lastMessage.isRead
-                      ? 'text-gray-900 font-medium'
-                      : 'text-gray-500'
-                  }`}>
-                    {conversation.lastMessage.content}
-                  </p>
-                </div>
-              </Link>
+              </div>
             ))}
+          </Card>
+        ) : filteredConversations.length > 0 ? (
+          <Card className="divide-y">
+            {filteredConversations.map((conversation: any) => {
+              const hasUnread = conversation.unreadCount > 0;
+              return (
+                <Link
+                  key={conversation.id}
+                  href={`/messages/${conversation.id}`}
+                  className="hover:bg-muted/50 flex items-start gap-4 p-4 transition"
+                >
+                  <div className="relative">
+                    <Avatar className="h-14 w-14">
+                      {conversation.participant?.avatar ? (
+                        <Image
+                          src={conversation.participant.avatar}
+                          alt={conversation.participant.name || 'User'}
+                          fill
+                        />
+                      ) : (
+                        <div className="bg-primary flex h-full w-full items-center justify-center text-lg font-bold text-white">
+                          {conversation.participant?.name?.charAt(0) || '?'}
+                        </div>
+                      )}
+                    </Avatar>
+                    {hasUnread && (
+                      <span className="bg-primary absolute right-0 top-0 h-3 w-3 rounded-full border-2 border-white" />
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center justify-between">
+                      <span
+                        className={`font-semibold ${
+                          hasUnread ? 'text-foreground' : 'text-foreground'
+                        }`}
+                      >
+                        {conversation.participant?.name || 'Unknown User'}
+                      </span>
+                      <span className="text-muted-foreground text-xs">
+                        {conversation.lastMessage
+                          ? formatRelativeTime(conversation.lastMessage.createdAt)
+                          : ''}
+                      </span>
+                    </div>
+                    <p className="text-primary mb-1 truncate text-sm">
+                      {conversation.job?.title || 'No job title'}
+                    </p>
+                    {conversation.lastMessage && (
+                      <p
+                        className={`truncate text-sm ${
+                          hasUnread ? 'text-foreground font-medium' : 'text-muted-foreground'
+                        }`}
+                      >
+                        {conversation.lastMessage.content}
+                      </p>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </Card>
         ) : (
           <Card className="p-12 text-center">
-            <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
-              No conversations yet
+            <MessageSquare className="text-muted-foreground/50 mx-auto mb-4 h-16 w-16" />
+            <h3 className="text-foreground mb-2 text-lg font-semibold">
+              {search ? t('messages.noConversationsFound') : t('messages.noConversationsYet')}
             </h3>
-            <p className="text-gray-500 mb-6">
-              When you connect with service providers or clients, your conversations will appear here
+            <p className="text-muted-foreground mb-6">
+              {search ? t('messages.adjustSearch') : t('messages.connectDesc')}
             </p>
-            <Link
-              href="/jobs"
-              className="inline-flex items-center justify-center px-6 py-2 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition"
-            >
-              Browse Jobs
-            </Link>
+            {!search && (
+              <Link
+                href="/jobs"
+                className="bg-primary hover:bg-primary/90 inline-flex items-center justify-center rounded-lg px-6 py-2 font-medium text-white transition"
+              >
+                {t('messages.browseJobs')}
+              </Link>
+            )}
           </Card>
         )}
       </div>

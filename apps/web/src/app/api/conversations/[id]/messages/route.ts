@@ -7,8 +7,10 @@ import {
   unauthorizedResponse,
   forbiddenResponse,
   validationErrorResponse,
-  serverErrorResponse,
 } from '@/lib/auth-middleware';
+import { sendPushNotification } from '@/lib/firebase-admin';
+import { moderateContent } from '@/lib/content-moderation';
+import { withLogging } from '@/lib/api-handler';
 
 // Extended schema with validated imageUrl (must be Cloudinary URL if provided)
 const messageWithImageSchema = sendMessageSchema.extend({
@@ -23,11 +25,8 @@ const messageWithImageSchema = sendMessageSchema.extend({
     .nullable(),
 });
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
+export const GET = withLogging(
+  async (request: NextRequest, { params }: { params: Record<string, string> }) => {
     const authUser = await authenticate(request);
     if (!authUser) {
       return unauthorizedResponse();
@@ -94,17 +93,12 @@ export async function GET(
       messages: messages.reverse(),
       hasMore: messages.length === limit,
     });
-  } catch (error) {
-    console.error('Get messages error:', error);
-    return serverErrorResponse();
-  }
-}
+  },
+  { route: '/api/conversations/[id]/messages' }
+);
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
+export const POST = withLogging(
+  async (request: NextRequest, { params }: { params: Record<string, string> }) => {
     const authUser = await authenticate(request);
     if (!authUser) {
       return unauthorizedResponse();
@@ -133,6 +127,12 @@ export async function POST(
     }
 
     const { content, imageUrl } = validationResult.data;
+
+    // Content moderation: block contact info in messages
+    const moderation = moderateContent(content);
+    if (!moderation.isClean) {
+      return validationErrorResponse([{ message: moderation.reason }]);
+    }
 
     // Create message
     const message = await prisma.message.create({
@@ -169,20 +169,46 @@ export async function POST(
     });
 
     if (otherParticipant) {
+      const notificationTitle = 'New message';
+      const notificationBody = `${authUser.name}: ${content.substring(0, 100)}${content.length > 100 ? '...' : ''}`;
+
       await prisma.notification.create({
         data: {
           type: 'NEW_MESSAGE',
-          title: 'New message',
-          body: `${authUser.name}: ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`,
+          title: notificationTitle,
+          body: notificationBody,
           data: { conversationId: params.id, messageId: message.id },
           userId: otherParticipant.userId,
         },
       });
+
+      // Send FCM push notification
+      const recipient = await prisma.user.findUnique({
+        where: { id: otherParticipant.userId },
+        select: { fcmToken: true },
+      });
+
+      if (recipient?.fcmToken) {
+        const pushSuccess = await sendPushNotification(
+          recipient.fcmToken,
+          { title: notificationTitle, body: notificationBody },
+          {
+            type: 'new_message',
+            conversationId: params.id,
+            messageId: message.id,
+          }
+        );
+
+        if (!pushSuccess) {
+          await prisma.user.update({
+            where: { id: otherParticipant.userId },
+            data: { fcmToken: null },
+          });
+        }
+      }
     }
 
     return NextResponse.json(message, { status: 201 });
-  } catch (error) {
-    console.error('Send message error:', error);
-    return serverErrorResponse();
-  }
-}
+  },
+  { route: '/api/conversations/[id]/messages' }
+);

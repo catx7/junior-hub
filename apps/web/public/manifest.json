@@ -1,6 +1,6 @@
 {
-  "name": "LocalServices",
-  "short_name": "LocalServices",
+  "name": "JuniorHub",
+  "short_name": "JuniorHub",
   "description": "Find trusted local service providers for babysitting, house cleaning, local food, and more.",
   "start_url": "/",
   "display": "standalone",

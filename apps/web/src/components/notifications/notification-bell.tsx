@@ -1,9 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { Bell, MessageSquare, Star, Briefcase, Check } from 'lucide-react';
-import { notificationStore } from '@/lib/notifications';
+import {
+  Bell,
+  MessageSquare,
+  Star,
+  Briefcase,
+  DollarSign,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/use-auth';
+import { getIdToken } from '@/lib/firebase';
 
 interface Notification {
   id: string;
@@ -12,46 +22,104 @@ interface Notification {
   body: string;
   data?: Record<string, string>;
   isRead: boolean;
-  createdAt: Date;
+  createdAt: string;
 }
 
 export function NotificationBell() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { isAuthenticated } = useAuth();
 
-  useEffect(() => {
-    setNotifications(notificationStore.getAll());
+  const { data: serverData } = useQuery({
+    queryKey: ['notifications-bell'],
+    queryFn: async () => {
+      const token = await getIdToken();
+      if (!token) return { notifications: [], unreadCount: 0 };
+      const res = await fetch('/api/notifications?limit=10', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return { notifications: [], unreadCount: 0 };
+      return res.json();
+    },
+    refetchInterval: 30000,
+    staleTime: 15000,
+    enabled: isAuthenticated,
+  });
 
-    const unsubscribe = notificationStore.subscribe((newNotifications) => {
-      setNotifications(newNotifications);
-    });
+  const notifications: Notification[] = (serverData?.notifications || []).map((n: any) => ({
+    id: n.id,
+    type: n.type,
+    title: n.title,
+    body: n.message,
+    data: n.data,
+    isRead: n.isRead,
+    createdAt: n.createdAt,
+  }));
 
-    return unsubscribe;
-  }, []);
+  const unreadCount = serverData?.unreadCount || 0;
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const markAllReadMutation = useMutation({
+    mutationFn: async () => {
+      const token = await getIdToken();
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action: 'markAllRead' }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications-bell'] });
+    },
+  });
+
+  const markReadMutation = useMutation({
+    mutationFn: async (notificationId: string) => {
+      const token = await getIdToken();
+      await fetch('/api/notifications', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action: 'markRead', notificationIds: [notificationId] }),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications-bell'] });
+    },
+  });
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'new_message':
-        return <MessageSquare className="w-5 h-5 text-blue-500" />;
-      case 'new_review':
-        return <Star className="w-5 h-5 text-yellow-500" />;
+      case 'NEW_MESSAGE':
+        return <MessageSquare className="h-5 w-5 text-blue-500" />;
+      case 'NEW_OFFER':
+        return <DollarSign className="h-5 w-5 text-green-500" />;
+      case 'OFFER_ACCEPTED':
+        return <CheckCircle2 className="h-5 w-5 text-purple-500" />;
+      case 'OFFER_REJECTED':
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
+      case 'NEW_REVIEW':
+        return <Star className="h-5 w-5 text-yellow-500" />;
       default:
-        return <Briefcase className="w-5 h-5 text-primary" />;
+        return <Briefcase className="text-primary h-5 w-5" />;
     }
   };
 
   const getNotificationLink = (notification: Notification): string => {
+    if (notification.data?.conversationId) {
+      return `/messages/${notification.data.conversationId}`;
+    }
+    if (notification.data?.jobId) {
+      return `/jobs/${notification.data.jobId}`;
+    }
     switch (notification.type) {
-      case 'new_message':
-        return `/messages/${notification.data?.conversationId || ''}`;
-      case 'new_offer':
-      case 'offer_accepted':
-      case 'offer_rejected':
-      case 'job_completed':
-        return `/jobs/${notification.data?.jobId || ''}`;
-      case 'new_review':
+      case 'NEW_MESSAGE':
+        return '/messages';
+      case 'NEW_REVIEW':
         return '/profile';
       default:
         return '/';
@@ -59,17 +127,20 @@ export function NotificationBell() {
   };
 
   const handleNotificationClick = (notification: Notification) => {
-    notificationStore.markAsRead(notification.id);
+    if (!notification.isRead) {
+      markReadMutation.mutate(notification.id);
+    }
     setIsOpen(false);
   };
 
   const handleMarkAllAsRead = () => {
-    notificationStore.markAllAsRead();
+    markAllReadMutation.mutate();
   };
 
-  const formatTime = (date: Date) => {
+  const formatTime = (dateStr: string) => {
     const now = new Date();
-    const diffMs = now.getTime() - new Date(date).getTime();
+    const date = new Date(dateStr);
+    const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMins / 60);
     const diffDays = Math.floor(diffHours / 24);
@@ -78,19 +149,19 @@ export function NotificationBell() {
     if (diffMins < 60) return `${diffMins}m ago`;
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
-    return new Date(date).toLocaleDateString();
+    return date.toLocaleDateString();
   };
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="relative p-2 rounded-full hover:bg-gray-100 transition"
+        className="hover:bg-muted relative rounded-full p-2 transition"
         aria-label="Notifications"
       >
-        <Bell className="w-6 h-6 text-gray-600" />
+        <Bell className="text-muted-foreground h-6 w-6" />
         {unreadCount > 0 && (
-          <span className="absolute top-0 right-0 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+          <span className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-bold text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -99,20 +170,17 @@ export function NotificationBell() {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 z-40"
-            onClick={() => setIsOpen(false)}
-          />
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
 
           {/* Dropdown */}
-          <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border z-50 overflow-hidden">
+          <div className="bg-card absolute right-0 z-50 mt-2 w-80 overflow-hidden rounded-xl border shadow-lg">
             {/* Header */}
-            <div className="px-4 py-3 border-b flex items-center justify-between">
+            <div className="flex items-center justify-between border-b px-4 py-3">
               <h3 className="font-semibold">Notifications</h3>
               {unreadCount > 0 && (
                 <button
                   onClick={handleMarkAllAsRead}
-                  className="text-sm text-primary hover:underline"
+                  className="text-primary text-sm hover:underline"
                 >
                   Mark all as read
                 </button>
@@ -127,32 +195,30 @@ export function NotificationBell() {
                     key={notification.id}
                     href={getNotificationLink(notification)}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`flex items-start gap-3 px-4 py-3 hover:bg-gray-50 transition ${
-                      !notification.isRead ? 'bg-blue-50' : ''
+                    className={`hover:bg-muted/50 flex items-start gap-3 px-4 py-3 transition ${
+                      !notification.isRead ? 'bg-primary/5' : ''
                     }`}
                   >
-                    <div className="flex-shrink-0 mt-1">
+                    <div className="mt-1 flex-shrink-0">
                       {getNotificationIcon(notification.type)}
                     </div>
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className={`text-sm ${!notification.isRead ? 'font-semibold' : ''}`}>
                         {notification.title}
                       </p>
-                      <p className="text-sm text-gray-500 truncate">
-                        {notification.body}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-muted-foreground truncate text-sm">{notification.body}</p>
+                      <p className="text-muted-foreground mt-1 text-xs">
                         {formatTime(notification.createdAt)}
                       </p>
                     </div>
                     {!notification.isRead && (
-                      <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
+                      <div className="bg-primary/50 mt-2 h-2 w-2 flex-shrink-0 rounded-full" />
                     )}
                   </Link>
                 ))
               ) : (
-                <div className="px-4 py-8 text-center text-gray-500">
-                  <Bell className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                <div className="text-muted-foreground px-4 py-8 text-center">
+                  <Bell className="text-muted-foreground/50 mx-auto mb-2 h-12 w-12" />
                   <p>No notifications yet</p>
                 </div>
               )}
@@ -160,11 +226,11 @@ export function NotificationBell() {
 
             {/* Footer */}
             {notifications.length > 0 && (
-              <div className="px-4 py-3 border-t">
+              <div className="border-t px-4 py-3">
                 <Link
                   href="/notifications"
                   onClick={() => setIsOpen(false)}
-                  className="text-sm text-primary hover:underline block text-center"
+                  className="text-primary block text-center text-sm hover:underline"
                 >
                   View all notifications
                 </Link>

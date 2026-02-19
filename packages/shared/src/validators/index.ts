@@ -70,13 +70,10 @@ export const serviceCategorySchema = z.enum([
   'OTHER',
 ]);
 
-export const jobStatusSchema = z.enum([
-  'DRAFT',
-  'OPEN',
-  'IN_PROGRESS',
-  'COMPLETED',
-  'CANCELLED',
-]);
+export const jobStatusSchema = z.enum(['DRAFT', 'OPEN', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']);
+
+export const jobTypeSchema = z.enum(['SERVICE_REQUEST', 'SERVICE_OFFERING']);
+export const pricingTypeSchema = z.enum(['FIXED', 'HOURLY', 'PER_LOCATION']);
 
 export const createJobSchema = z.object({
   title: z
@@ -90,16 +87,22 @@ export const createJobSchema = z.object({
     .max(2000, 'Description must be at most 2000 characters')
     .trim(),
   category: serviceCategorySchema,
-  budget: z.number().positive('Budget must be positive').max(100000, 'Budget exceeds maximum'),
+  jobType: jobTypeSchema.default('SERVICE_REQUEST'),
+  pricingType: pricingTypeSchema.default('FIXED'),
+  budget: z
+    .number()
+    .positive('Budget must be positive')
+    .max(100000, 'Budget exceeds maximum')
+    .optional()
+    .nullable(),
   currency: z.string().length(3).default('USD'),
-  location: z
-    .string()
-    .min(3, 'Location must be at least 3 characters')
-    .max(200)
-    .trim(),
+  location: z.string().min(3, 'Location must be at least 3 characters').max(200).trim(),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
-  scheduledAt: z.coerce.date().optional().nullable(),
+  scheduledAt: z.preprocess(
+    (val) => (val === '' || val === undefined || val === null ? undefined : val),
+    z.coerce.date().optional().nullable()
+  ),
 });
 
 export const updateJobSchema = createJobSchema.partial();
@@ -110,10 +113,7 @@ export const updateJobStatusSchema = z.object({
 
 // Offer Validators
 export const createOfferSchema = z.object({
-  price: z
-    .number()
-    .positive('Price must be positive')
-    .max(100000, 'Price exceeds maximum'),
+  price: z.number().positive('Price must be positive').max(100000, 'Price exceeds maximum'),
   message: z
     .string()
     .min(10, 'Message must be at least 10 characters')
@@ -136,9 +136,55 @@ export const sendMessageSchema = z.object({
   content: z.string().min(1, 'Message cannot be empty').max(2000).trim(),
 });
 
+// Booking Request Validators (for service offerings)
+export const createBookingRequestSchema = z.object({
+  preferredDate: z.coerce.date(),
+  message: z
+    .string()
+    .min(10, 'Message must be at least 10 characters')
+    .max(1000, 'Message must be at most 1000 characters')
+    .trim(),
+});
+
+// Local Food Validators
+export const createLocalFoodSchema = z.object({
+  title: z
+    .string()
+    .min(5, 'Title must be at least 5 characters')
+    .max(100, 'Title must be at most 100 characters')
+    .trim(),
+  description: z
+    .string()
+    .min(20, 'Description must be at least 20 characters')
+    .max(2000, 'Description must be at most 2000 characters')
+    .trim(),
+  category: z.string().min(1, 'Category is required'),
+  price: z.number().positive('Price must be positive').max(10000, 'Price exceeds maximum'),
+  pickupOnly: z.boolean().default(false),
+  pickupLocation: z.string().max(200).optional(),
+  deliveryAvailable: z.boolean().default(false),
+  deliveryArea: z.string().max(200).optional(),
+  location: z.string().min(3, 'Location must be at least 3 characters').max(200).trim(),
+  latitude: z.number().min(-90).max(90).optional(),
+  longitude: z.number().min(-180).max(180).optional(),
+});
+
+export const createFoodOrderSchema = z.object({
+  quantity: z
+    .number()
+    .int()
+    .positive('Quantity must be positive')
+    .max(100, 'Maximum 100 items per order'),
+  orderType: z.enum(['DELIVERY', 'PICKUP']),
+  deliveryAddress: z.string().max(200).optional(),
+  pickupLocation: z.string().max(200).optional(),
+  message: z.string().max(500).optional(),
+});
+
 // Job Filters Validators
 export const jobFiltersSchema = z.object({
   category: serviceCategorySchema.optional(),
+  jobType: jobTypeSchema.optional(),
   status: jobStatusSchema.optional(),
   minBudget: z.coerce.number().positive().optional(),
   maxBudget: z.coerce.number().positive().optional(),
@@ -150,6 +196,8 @@ export const jobFiltersSchema = z.object({
   order: z.enum(['asc', 'desc']).optional(),
   page: z.coerce.number().int().positive().optional().default(1),
   limit: z.coerce.number().int().positive().max(100).optional().default(20),
+  posterId: z.string().optional(),
+  providerId: z.string().optional(),
 });
 
 // Promotion Validators
@@ -173,6 +221,21 @@ export const paginationSchema = z.object({
   limit: z.coerce.number().int().positive().max(100).optional().default(20),
 });
 
+// Verification Request Validators
+export const createVerificationRequestSchema = z.object({
+  motivation: z
+    .string()
+    .min(20, 'Please describe why you want to become a provider (at least 20 characters)')
+    .max(2000, 'Motivation must be at most 2000 characters')
+    .trim(),
+  documentUrl: z.string().url('Invalid document URL').optional(),
+});
+
+export const updateVerificationStatusSchema = z.object({
+  status: z.enum(['approved', 'rejected']),
+  notes: z.string().max(2000).optional().default(''),
+});
+
 // Type exports from schemas
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -188,3 +251,8 @@ export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type JobFiltersInput = z.infer<typeof jobFiltersSchema>;
 export type CreatePromotionInput = z.infer<typeof createPromotionSchema>;
 export type PaginationInput = z.infer<typeof paginationSchema>;
+export type CreateVerificationRequestInput = z.infer<typeof createVerificationRequestSchema>;
+export type UpdateVerificationStatusInput = z.infer<typeof updateVerificationStatusSchema>;
+export type CreateBookingRequestInput = z.infer<typeof createBookingRequestSchema>;
+export type CreateLocalFoodInput = z.infer<typeof createLocalFoodSchema>;
+export type CreateFoodOrderInput = z.infer<typeof createFoodOrderSchema>;

@@ -5,14 +5,11 @@ import {
   unauthorizedResponse,
   forbiddenResponse,
   notFoundResponse,
-  serverErrorResponse,
 } from '@/lib/auth-middleware';
+import { withLogging } from '@/lib/api-handler';
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
+export const PATCH = withLogging(
+  async (request: NextRequest, { params }: { params: Record<string, string> }) => {
     const authUser = await authenticate(request);
     if (!authUser) {
       return unauthorizedResponse();
@@ -74,146 +71,147 @@ export async function PATCH(
     }
 
     // Use transaction with optimistic locking to prevent race conditions
-    const result = await prisma.$transaction(async (tx) => {
-      // Re-verify job status inside transaction (prevents race condition)
-      const currentJob = await tx.job.findUnique({
-        where: { id: offer.job.id },
-        select: { status: true },
-      });
+    try {
+      const result = await prisma.$transaction(async (tx) => {
+        // Re-verify job status inside transaction (prevents race condition)
+        const currentJob = await tx.job.findUnique({
+          where: { id: offer.job.id },
+          select: { status: true },
+        });
 
-      if (!currentJob || currentJob.status !== 'OPEN') {
-        throw new Error('JOB_NOT_OPEN');
-      }
+        if (!currentJob || currentJob.status !== 'OPEN') {
+          throw new Error('JOB_NOT_OPEN');
+        }
 
-      // Re-verify offer hasn't been processed by concurrent request
-      const currentOffer = await tx.offer.findUnique({
-        where: { id: params.id },
-        select: { isAccepted: true, isRejected: true },
-      });
+        // Re-verify offer hasn't been processed by concurrent request
+        const currentOffer = await tx.offer.findUnique({
+          where: { id: params.id },
+          select: { isAccepted: true, isRejected: true },
+        });
 
-      if (!currentOffer || currentOffer.isAccepted || currentOffer.isRejected) {
-        throw new Error('OFFER_ALREADY_PROCESSED');
-      }
+        if (!currentOffer || currentOffer.isAccepted || currentOffer.isRejected) {
+          throw new Error('OFFER_ALREADY_PROCESSED');
+        }
 
-      // Accept this offer
-      const acceptedOffer = await tx.offer.update({
-        where: { id: params.id },
-        data: { isAccepted: true },
-      });
+        // Accept this offer
+        const acceptedOffer = await tx.offer.update({
+          where: { id: params.id },
+          data: { isAccepted: true },
+        });
 
-      // Reject all other offers for this job
-      await tx.offer.updateMany({
-        where: {
-          jobId: offer.job.id,
-          id: { not: params.id },
-        },
-        data: { isRejected: true },
-      });
+        // Reject all other offers for this job
+        await tx.offer.updateMany({
+          where: {
+            jobId: offer.job.id,
+            id: { not: params.id },
+          },
+          data: { isRejected: true },
+        });
 
-      // Update job status and assign provider
-      const updatedJob = await tx.job.update({
-        where: { id: offer.job.id },
-        data: {
-          status: 'IN_PROGRESS',
-          providerId: offer.providerId,
-        },
-      });
+        // Update job status and assign provider
+        const updatedJob = await tx.job.update({
+          where: { id: offer.job.id },
+          data: {
+            status: 'IN_PROGRESS',
+            providerId: offer.providerId,
+          },
+        });
 
-      // Create conversation
-      const conversation = await tx.conversation.create({
-        data: {
-          jobId: offer.job.id,
-          participants: {
-            create: [
-              { userId: authUser.id },
-              { userId: offer.providerId },
+        // Find existing conversation (created when offer was submitted) or create one
+        let conversation = await tx.conversation.findFirst({
+          where: {
+            jobId: offer.job.id,
+            AND: [
+              { participants: { some: { userId: authUser.id } } },
+              { participants: { some: { userId: offer.providerId } } },
             ],
           },
-        },
-      });
-
-      // Create notification for provider
-      await tx.notification.create({
-        data: {
-          type: 'OFFER_ACCEPTED',
-          title: 'Offer accepted!',
-          body: `Your offer for "${offer.job.title}" was accepted`,
-          data: {
-            jobId: offer.job.id,
-            offerId: params.id,
-            conversationId: conversation.id,
-          },
-          userId: offer.providerId,
-        },
-      });
-
-      // Notify rejected providers
-      const rejectedOffers = await tx.offer.findMany({
-        where: {
-          jobId: offer.job.id,
-          id: { not: params.id },
-          isRejected: true,
-        },
-        select: { providerId: true },
-      });
-
-      if (rejectedOffers.length > 0) {
-        await tx.notification.createMany({
-          data: rejectedOffers.map((o) => ({
-            type: 'OFFER_REJECTED' as const,
-            title: 'Offer not selected',
-            body: `Your offer for "${offer.job.title}" was not selected`,
-            data: { jobId: offer.job.id },
-            userId: o.providerId,
-          })),
         });
-      }
 
-      return { offer: acceptedOffer, job: updatedJob, conversation };
-    });
+        if (!conversation) {
+          conversation = await tx.conversation.create({
+            data: {
+              jobId: offer.job.id,
+              participants: {
+                create: [{ userId: authUser.id }, { userId: offer.providerId }],
+              },
+            },
+          });
+        }
 
-    return NextResponse.json({
-      offer: {
-        ...result.offer,
-        price: Number(result.offer.price),
-        isAccepted: true,
-      },
-      job: {
-        id: result.job.id,
-        status: result.job.status,
-        providerId: result.job.providerId,
-      },
-      conversation: {
-        id: result.conversation.id,
-      },
-    });
-  } catch (error) {
-    // Handle race condition errors
-    if (error instanceof Error) {
-      if (error.message === 'JOB_NOT_OPEN') {
-        return NextResponse.json(
-          {
-            error: {
-              code: 'CONFLICT',
-              message: 'This job is no longer accepting offers',
+        // Create notification for provider
+        await tx.notification.create({
+          data: {
+            type: 'OFFER_ACCEPTED',
+            title: 'Offer accepted!',
+            body: `Your offer for "${offer.job.title}" was accepted`,
+            data: {
+              jobId: offer.job.id,
+              offerId: params.id,
+              conversationId: conversation.id,
             },
+            userId: offer.providerId,
           },
-          { status: 409 }
-        );
-      }
-      if (error.message === 'OFFER_ALREADY_PROCESSED') {
-        return NextResponse.json(
-          {
-            error: {
-              code: 'CONFLICT',
-              message: 'This offer has already been processed',
-            },
+        });
+
+        // Notify rejected providers
+        const rejectedOffers = await tx.offer.findMany({
+          where: {
+            jobId: offer.job.id,
+            id: { not: params.id },
+            isRejected: true,
           },
-          { status: 409 }
-        );
+          select: { providerId: true },
+        });
+
+        if (rejectedOffers.length > 0) {
+          await tx.notification.createMany({
+            data: rejectedOffers.map((o) => ({
+              type: 'OFFER_REJECTED' as const,
+              title: 'Offer not selected',
+              body: `Your offer for "${offer.job.title}" was not selected`,
+              data: { jobId: offer.job.id },
+              userId: o.providerId,
+            })),
+          });
+        }
+
+        return { offer: acceptedOffer, job: updatedJob, conversation };
+      });
+
+      return NextResponse.json({
+        offer: {
+          ...result.offer,
+          price: Number(result.offer.price),
+          isAccepted: true,
+        },
+        job: {
+          id: result.job.id,
+          status: result.job.status,
+          providerId: result.job.providerId,
+        },
+        conversation: {
+          id: result.conversation.id,
+        },
+      });
+    } catch (error) {
+      // Handle known race condition errors — unexpected errors bubble to withLogging
+      if (error instanceof Error) {
+        if (error.message === 'JOB_NOT_OPEN') {
+          return NextResponse.json(
+            { error: { code: 'CONFLICT', message: 'This job is no longer accepting offers' } },
+            { status: 409 }
+          );
+        }
+        if (error.message === 'OFFER_ALREADY_PROCESSED') {
+          return NextResponse.json(
+            { error: { code: 'CONFLICT', message: 'This offer has already been processed' } },
+            { status: 409 }
+          );
+        }
       }
+      throw error; // Re-throw for withLogging to catch and log
     }
-    console.error('Accept offer error:', error);
-    return serverErrorResponse();
-  }
-}
+  },
+  { route: '/api/offers/[id]/accept' }
+);

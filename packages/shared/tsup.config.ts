@@ -10,7 +10,9 @@ export default defineConfig({
     'utils/index': 'src/utils/index.ts',
   },
   format: ['cjs', 'esm'],
-  dts: true,
+  dts: {
+    resolve: true, // Resolve external types
+  },
   splitting: false,
   sourcemap: true,
   clean: true,

@@ -88,8 +88,7 @@ export function useUploadJobImages() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, files }: { id: string; files: File[] }) =>
-      jobsApi.uploadImages(id, files),
+    mutationFn: ({ id, files }: { id: string; files: File[] }) => jobsApi.uploadImages(id, files),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: ['job', id] });
       toast.success('Images uploaded successfully!');

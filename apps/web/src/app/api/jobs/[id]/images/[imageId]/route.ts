@@ -31,18 +31,12 @@ export async function DELETE(
 
     // Verify job ownership
     if (image.job.posterId !== user.id) {
-      return NextResponse.json(
-        { error: 'Only the job poster can delete images' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Only the job poster can delete images' }, { status: 403 });
     }
 
     // Verify image belongs to the job
     if (image.jobId !== jobId) {
-      return NextResponse.json(
-        { error: 'Image does not belong to this job' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Image does not belong to this job' }, { status: 400 });
     }
 
     // Delete from Cloudinary
@@ -61,10 +55,7 @@ export async function DELETE(
     return NextResponse.json({ message: 'Image deleted successfully' });
   } catch (error) {
     console.error('Delete image error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -83,10 +74,7 @@ export async function PATCH(
     const { order } = body;
 
     if (typeof order !== 'number') {
-      return NextResponse.json(
-        { error: 'Order must be a number' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Order must be a number' }, { status: 400 });
     }
 
     // Get the image with job info
@@ -105,10 +93,7 @@ export async function PATCH(
 
     // Verify job ownership
     if (image.job.posterId !== user.id) {
-      return NextResponse.json(
-        { error: 'Only the job poster can update images' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Only the job poster can update images' }, { status: 403 });
     }
 
     // Update order
@@ -120,9 +105,6 @@ export async function PATCH(
     return NextResponse.json(updatedImage);
   } catch (error) {
     console.error('Update image error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

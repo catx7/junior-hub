@@ -4,13 +4,19 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Search, MapPin, Star, ArrowRight } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, SERVICE_CATEGORIES, SPACING, BORDER_RADIUS, TYPOGRAPHY } from '@localservices/shared';
+import {
+  COLORS,
+  SERVICE_CATEGORIES,
+  SPACING,
+  BORDER_RADIUS,
+  TYPOGRAPHY,
+} from '@localservices/shared';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = width * 0.7;
 
 export default function HomeScreen() {
-  const categories = Object.values(SERVICE_CATEGORIES).filter(c => c.id !== 'OTHER');
+  const categories = Object.values(SERVICE_CATEGORIES).filter((c) => c.id !== 'OTHER');
 
   const featuredJobs = [
     {
@@ -78,26 +84,23 @@ export default function HomeScreen() {
             contentContainerStyle={styles.categoriesContainer}
           >
             {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/browse?category=${category.id}`}
-                asChild
-              >
+              <Link key={category.id} href={`/browse?category=${category.id}`} asChild>
                 <TouchableOpacity style={styles.categoryCard}>
-                  <View
-                    style={[
-                      styles.categoryIcon,
-                      { backgroundColor: `${category.color}20` },
-                    ]}
-                  >
+                  <View style={[styles.categoryIcon, { backgroundColor: `${category.color}20` }]}>
                     <Text style={[styles.categoryEmoji, { color: category.color }]}>
-                      {category.id === 'BABYSITTING' ? '👶' :
-                       category.id === 'HOUSE_CLEANING' ? '🏠' : '🍽️'}
+                      {category.id === 'BABYSITTING'
+                        ? '👶'
+                        : category.id === 'HOUSE_CLEANING'
+                          ? '🏠'
+                          : '🍽️'}
                     </Text>
                   </View>
                   <Text style={styles.categoryName}>
-                    {category.id === 'BABYSITTING' ? 'Babysitting' :
-                     category.id === 'HOUSE_CLEANING' ? 'Cleaning' : 'Food'}
+                    {category.id === 'BABYSITTING'
+                      ? 'Babysitting'
+                      : category.id === 'HOUSE_CLEANING'
+                        ? 'Cleaning'
+                        : 'Food'}
                   </Text>
                 </TouchableOpacity>
               </Link>
@@ -148,8 +151,11 @@ export default function HomeScreen() {
                       ]}
                     >
                       <Text style={styles.jobBadgeText}>
-                        {job.category === 'BABYSITTING' ? 'Babysitting' :
-                         job.category === 'HOUSE_CLEANING' ? 'Cleaning' : 'Food'}
+                        {job.category === 'BABYSITTING'
+                          ? 'Babysitting'
+                          : job.category === 'HOUSE_CLEANING'
+                            ? 'Cleaning'
+                            : 'Food'}
                       </Text>
                     </View>
                     <Text style={styles.jobTitle}>{job.title}</Text>

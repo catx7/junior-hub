@@ -1,18 +1,31 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Info } from 'lucide-react';
 import { Button, Input, Label, Card, CardContent, CardHeader, CardTitle } from '@/components/ui';
 import { useAuth } from '@/hooks/use-auth';
 import { useTranslation } from '@/hooks/use-translation';
+import { useRecaptcha } from '@/hooks/use-recaptcha';
 import { registerSchema, type RegisterInput } from '@localservices/shared';
 
 export default function RegisterPage() {
+  return (
+    <Suspense fallback={null}>
+      <RegisterPageContent />
+    </Suspense>
+  );
+}
+
+function RegisterPageContent() {
   const { t } = useTranslation();
+  const searchParams = useSearchParams();
+  const message = searchParams.get('message');
   const { register: registerUser, loginWithGoogle, loginWithFacebook, isLoading } = useAuth();
+  const { verifyCaptcha } = useRecaptcha();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -25,7 +38,7 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterInput) => {
     try {
-      await registerUser(data.name, data.email, data.password);
+      await registerUser(data.name, data.email, data.password, verifyCaptcha);
     } catch (error) {
       // Error handled in hook
     }
@@ -35,6 +48,12 @@ export default function RegisterPage() {
     <Card className="w-full max-w-md">
       <CardHeader className="text-center">
         <CardTitle className="text-2xl">{t('auth.register')}</CardTitle>
+        {message && (
+          <div className="mt-3 flex items-center gap-2 rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-700">
+            <Info className="h-4 w-4 shrink-0" />
+            <span>{message}</span>
+          </div>
+        )}
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -47,9 +66,7 @@ export default function RegisterPage() {
               error={!!errors.name}
               {...register('name')}
             />
-            {errors.name && (
-              <p className="text-sm text-destructive">{errors.name.message}</p>
-            )}
+            {errors.name && <p className="text-destructive text-sm">{errors.name.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -61,9 +78,7 @@ export default function RegisterPage() {
               error={!!errors.email}
               {...register('email')}
             />
-            {errors.email && (
-              <p className="text-sm text-destructive">{errors.email.message}</p>
-            )}
+            {errors.email && <p className="text-destructive text-sm">{errors.email.message}</p>}
           </div>
 
           <div className="space-y-2">
@@ -79,17 +94,13 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                className="text-muted-foreground absolute right-3 top-1/2 -translate-y-1/2"
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
-                ) : (
-                  <Eye className="h-4 w-4" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
             {errors.password && (
-              <p className="text-sm text-destructive">{errors.password.message}</p>
+              <p className="text-destructive text-sm">{errors.password.message}</p>
             )}
           </div>
 
@@ -103,13 +114,11 @@ export default function RegisterPage() {
               {...register('confirmPassword')}
             />
             {errors.confirmPassword && (
-              <p className="text-sm text-destructive">
-                {errors.confirmPassword.message}
-              </p>
+              <p className="text-destructive text-sm">{errors.confirmPassword.message}</p>
             )}
           </div>
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             {t('auth.termsAgree')}{' '}
             <Link href="/terms" className="text-primary hover:underline">
               {t('auth.termsOfService')}
@@ -130,9 +139,7 @@ export default function RegisterPage() {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-card px-2 text-muted-foreground">
-              {t('auth.continueWith')}
-            </span>
+            <span className="bg-card text-muted-foreground px-2">{t('auth.continueWith')}</span>
           </div>
         </div>
 
@@ -177,7 +184,7 @@ export default function RegisterPage() {
           </Button>
         </div>
 
-        <p className="mt-6 text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-6 text-center text-sm">
           {t('auth.hasAccount')}{' '}
           <Link href="/login" className="text-primary hover:underline">
             {t('auth.login')}

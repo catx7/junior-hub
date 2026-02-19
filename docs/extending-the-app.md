@@ -80,10 +80,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ errors: error.errors }, { status: 400 });
     }
     console.error('Create promotion error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -103,10 +100,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(promotions);
   } catch (error) {
     console.error('List promotions error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 ```
@@ -427,11 +421,7 @@ export interface Notification {
   userId: string;
 }
 
-export type NotificationType =
-  | 'job_offer'
-  | 'offer_accepted'
-  | 'new_message'
-  | 'review_received';
+export type NotificationType = 'job_offer' | 'offer_accepted' | 'new_message' | 'review_received';
 ```
 
 ---

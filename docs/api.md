@@ -39,6 +39,7 @@ Content-Type: application/json
 ```
 
 **Response** `201 Created`
+
 ```json
 {
   "user": {
@@ -65,6 +66,7 @@ Content-Type: application/json
 ```
 
 **Response** `200 OK`
+
 ```json
 {
   "user": { ... },
@@ -85,6 +87,7 @@ Authorization: Bearer <token>
 ```
 
 **Response** `200 OK`
+
 ```json
 {
   "id": "clx1234567890",
@@ -95,7 +98,7 @@ Authorization: Bearer <token>
   "bio": "Experienced babysitter...",
   "address": "123 Main St, New York, NY",
   "latitude": 40.7128,
-  "longitude": -74.0060,
+  "longitude": -74.006,
   "role": "USER",
   "isVerified": true,
   "rating": 4.8,
@@ -122,6 +125,7 @@ Content-Type: application/json
 ```
 
 **Response** `200 OK`
+
 ```json
 {
   "id": "clx1234567890",
@@ -137,6 +141,7 @@ GET /api/users/:id
 ```
 
 **Response** `200 OK`
+
 ```json
 {
   "id": "clx1234567890",
@@ -156,6 +161,7 @@ GET /api/users/:id/reviews?page=1&limit=10
 ```
 
 **Response** `200 OK`
+
 ```json
 {
   "reviews": [
@@ -211,6 +217,7 @@ GET /api/jobs?category=BABYSITTING&status=OPEN&lat=40.7128&lng=-74.0060&radius=2
 | limit | number | Items per page |
 
 **Response** `200 OK`
+
 ```json
 {
   "jobs": [
@@ -219,7 +226,7 @@ GET /api/jobs?category=BABYSITTING&status=OPEN&lat=40.7128&lng=-74.0060&radius=2
       "title": "Babysitter needed for 2 kids",
       "description": "Looking for experienced babysitter...",
       "category": "BABYSITTING",
-      "budget": 50.00,
+      "budget": 50.0,
       "currency": "USD",
       "status": "OPEN",
       "location": "Manhattan, NY",
@@ -274,6 +281,7 @@ Content-Type: application/json
 ```
 
 **Response** `201 Created`
+
 ```json
 {
   "id": "clx444555666",
@@ -290,6 +298,7 @@ GET /api/jobs/:id
 ```
 
 **Response** `200 OK`
+
 ```json
 {
   "id": "clx444555666",
@@ -352,6 +361,7 @@ images: [File, File, ...]
 ```
 
 **Response** `201 Created`
+
 ```json
 {
   "images": [
@@ -388,12 +398,13 @@ Authorization: Bearer <token>
 ```
 
 **Response** `200 OK`
+
 ```json
 {
   "offers": [
     {
       "id": "offer123",
-      "price": 45.00,
+      "price": 45.0,
       "message": "I have 5 years of experience with children...",
       "isAccepted": false,
       "provider": {
@@ -423,10 +434,11 @@ Content-Type: application/json
 ```
 
 **Response** `201 Created`
+
 ```json
 {
   "id": "offer123",
-  "price": 45.00,
+  "price": 45.0,
   "message": "I have 5 years of experience...",
   "isAccepted": false,
   "createdAt": "2024-02-16T09:00:00Z"
@@ -441,6 +453,7 @@ Authorization: Bearer <token>
 ```
 
 **Response** `200 OK`
+
 ```json
 {
   "offer": {
@@ -490,6 +503,7 @@ Content-Type: application/json
 ```
 
 **Response** `201 Created`
+
 ```json
 {
   "id": "review123",
@@ -511,6 +525,7 @@ Authorization: Bearer <token>
 ```
 
 **Response** `200 OK`
+
 ```json
 {
   "conversations": [
@@ -545,6 +560,7 @@ Authorization: Bearer <token>
 ```
 
 **Response** `200 OK`
+
 ```json
 {
   "messages": [
@@ -578,6 +594,7 @@ Content-Type: application/json
 ```
 
 Or with image:
+
 ```http
 POST /api/conversations/:id/messages
 Authorization: Bearer <token>
@@ -594,6 +611,7 @@ image: [File]
 Connect to: `wss://api.localservices.com/socket`
 
 #### Authentication
+
 ```javascript
 socket.emit('authenticate', { token: 'firebase_token' });
 ```
@@ -601,6 +619,7 @@ socket.emit('authenticate', { token: 'firebase_token' });
 #### Events
 
 **Receive Message**
+
 ```javascript
 socket.on('message:new', (data) => {
   // {
@@ -611,6 +630,7 @@ socket.on('message:new', (data) => {
 ```
 
 **Message Read**
+
 ```javascript
 socket.on('message:read', (data) => {
   // { conversationId: "conv123", readAt: "..." }
@@ -618,6 +638,7 @@ socket.on('message:read', (data) => {
 ```
 
 **Typing Indicator**
+
 ```javascript
 socket.emit('typing:start', { conversationId: 'conv123' });
 socket.emit('typing:stop', { conversationId: 'conv123' });
@@ -650,29 +671,30 @@ All errors follow this format:
 
 ### Error Codes
 
-| Code | HTTP Status | Description |
-|------|-------------|-------------|
-| UNAUTHORIZED | 401 | Missing or invalid auth token |
-| FORBIDDEN | 403 | Insufficient permissions |
-| NOT_FOUND | 404 | Resource not found |
-| VALIDATION_ERROR | 400 | Invalid request data |
-| CONFLICT | 409 | Resource already exists |
-| RATE_LIMITED | 429 | Too many requests |
-| INTERNAL_ERROR | 500 | Server error |
+| Code             | HTTP Status | Description                   |
+| ---------------- | ----------- | ----------------------------- |
+| UNAUTHORIZED     | 401         | Missing or invalid auth token |
+| FORBIDDEN        | 403         | Insufficient permissions      |
+| NOT_FOUND        | 404         | Resource not found            |
+| VALIDATION_ERROR | 400         | Invalid request data          |
+| CONFLICT         | 409         | Resource already exists       |
+| RATE_LIMITED     | 429         | Too many requests             |
+| INTERNAL_ERROR   | 500         | Server error                  |
 
 ---
 
 ## Rate Limits
 
-| Endpoint | Limit |
-|----------|-------|
-| Authentication | 10 req/min |
-| Job creation | 20 req/hour |
-| Message sending | 60 req/min |
-| Image upload | 30 req/hour |
-| General API | 100 req/min |
+| Endpoint        | Limit       |
+| --------------- | ----------- |
+| Authentication  | 10 req/min  |
+| Job creation    | 20 req/hour |
+| Message sending | 60 req/min  |
+| Image upload    | 30 req/hour |
+| General API     | 100 req/min |
 
 Response headers include:
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95

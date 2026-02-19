@@ -4,78 +4,108 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
-import { Send, ImageIcon, ArrowLeft, Info } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Send, ImageIcon, ArrowLeft, Info, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar } from '@/components/ui/avatar';
+import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/hooks/use-auth';
+import { getIdToken } from '@/lib/firebase';
+import { toast } from 'sonner';
+import { useTranslation } from '@/hooks/use-translation';
 
 interface Message {
   id: string;
   content: string;
   senderId: string;
-  createdAt: Date;
+  sender: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
+  createdAt: string;
   isRead: boolean;
+}
+
+interface Conversation {
+  id: string;
+  job: {
+    id: string;
+    title: string;
+  } | null;
+  participant: {
+    id: string;
+    name: string;
+    avatar: string | null;
+  };
 }
 
 export default function ChatPage() {
   const params = useParams();
+  const queryClient = useQueryClient();
+  const conversationId = params.id as string;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [message, setMessage] = useState('');
-  const [isSending, setIsSending] = useState(false);
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { t } = useTranslation();
 
-  const currentUserId = 'current-user'; // Replace with actual auth
+  // Fetch conversation details
+  const { data: conversationData, isLoading: isConversationLoading } = useQuery({
+    queryKey: ['conversation', conversationId],
+    queryFn: async () => {
+      const token = await getIdToken();
+      const res = await fetch('/api/conversations', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to fetch conversations');
+      const data = await res.json();
+      return data.conversations.find((c: any) => c.id === conversationId);
+    },
+    enabled: isAuthenticated && !!conversationId,
+  });
 
-  // Mock data
-  const conversation = {
-    id: params.id,
-    job: {
-      id: 'j1',
-      title: 'Babysitter needed for 2 kids',
-      status: 'OPEN',
+  // Fetch messages
+  const { data: messagesData, isLoading: isMessagesLoading } = useQuery({
+    queryKey: ['messages', conversationId],
+    queryFn: async () => {
+      const token = await getIdToken();
+      const res = await fetch(`/api/conversations/${conversationId}/messages`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to fetch messages');
+      return res.json();
     },
-    otherUser: {
-      id: 'u2',
-      name: 'Jane Smith',
-      avatar: null,
-    },
-  };
+    enabled: isAuthenticated && !!conversationId,
+    refetchInterval: 5000, // Poll for new messages every 5 seconds
+  });
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      content: 'Hi! I saw your job posting for a babysitter. I have 5 years of experience and am CPR certified.',
-      senderId: 'u2',
-      createdAt: new Date(Date.now() - 3600000),
-      isRead: true,
+  // Send message mutation
+  const sendMessageMutation = useMutation({
+    mutationFn: async (content: string) => {
+      const token = await getIdToken();
+      const res = await fetch(`/api/conversations/${conversationId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ content }),
+      });
+      if (!res.ok) throw new Error('Failed to send message');
+      return res.json();
     },
-    {
-      id: '2',
-      content: 'That sounds great! Can you tell me more about your availability?',
-      senderId: currentUserId,
-      createdAt: new Date(Date.now() - 3000000),
-      isRead: true,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages', conversationId] });
+      setMessage('');
     },
-    {
-      id: '3',
-      content: 'I am available this Saturday from 6 PM onwards. I can also provide references if you would like.',
-      senderId: 'u2',
-      createdAt: new Date(Date.now() - 2400000),
-      isRead: true,
+    onError: () => {
+      toast.error(t('messages.failedToSend'));
     },
-    {
-      id: '4',
-      content: 'Perfect! Saturday works for me. The job is for about 5 hours. Would $75 work for you?',
-      senderId: currentUserId,
-      createdAt: new Date(Date.now() - 1800000),
-      isRead: true,
-    },
-    {
-      id: '5',
-      content: 'Yes, that works perfectly! Should I bring any activities for the kids?',
-      senderId: 'u2',
-      createdAt: new Date(Date.now() - 600000),
-      isRead: false,
-    },
-  ]);
+  });
+
+  const messages: Message[] = messagesData?.messages || [];
+  const conversation: Conversation | undefined = conversationData;
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -83,35 +113,25 @@ export default function ChatPage() {
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) return;
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content: message.trim(),
-      senderId: currentUserId,
-      createdAt: new Date(),
-      isRead: false,
-    };
-
-    setMessages([...messages, newMessage]);
-    setMessage('');
-
-    // TODO: Send via API/Socket
+    if (!message.trim() || sendMessageMutation.isPending) return;
+    sendMessageMutation.mutate(message.trim());
   };
 
-  const formatTime = (date: Date) => {
+  const formatTime = (dateStr: string) => {
+    const date = new Date(dateStr);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
     if (date.toDateString() === today.toDateString()) {
-      return 'Today';
+      return t('messages.today');
     } else if (date.toDateString() === yesterday.toDateString()) {
-      return 'Yesterday';
+      return t('messages.yesterday');
     }
     return date.toLocaleDateString();
   };
@@ -128,129 +148,207 @@ export default function ChatPage() {
     }
   });
 
+  if (isAuthLoading) {
+    return (
+      <div className="bg-muted/50 flex h-[calc(100vh-64px)] items-center justify-center">
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-muted/50 flex h-[calc(100vh-64px)] items-center justify-center">
+        <Card className="p-6 text-center">
+          <p className="mb-4">{t('messages.loginToView')}</p>
+          <Link href="/login">
+            <Button>{t('auth.login')}</Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
+  if (isConversationLoading || isMessagesLoading) {
+    return (
+      <div className="bg-muted/50 flex h-[calc(100vh-64px)] flex-col">
+        <div className="bg-card flex items-center gap-4 border-b px-4 py-3">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div className="flex-1">
+            <Skeleton className="mb-1 h-5 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        </div>
+        <div className="flex-1 p-4">
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className={`flex ${i % 2 === 0 ? 'justify-start' : 'justify-end'}`}>
+                <Skeleton className="h-16 w-64 rounded-2xl" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!conversation) {
+    return (
+      <div className="bg-muted/50 flex h-[calc(100vh-64px)] items-center justify-center">
+        <Card className="p-6 text-center">
+          <p className="mb-4">{t('messages.conversationNotFound')}</p>
+          <Link href="/messages">
+            <Button>{t('messages.backToMessages')}</Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
   return (
-    <div className="h-[calc(100vh-64px)] flex flex-col bg-gray-50">
+    <div className="bg-muted/50 flex h-[calc(100vh-64px)] flex-col">
       {/* Header */}
-      <div className="bg-white border-b px-4 py-3 flex items-center gap-4">
+      <div className="bg-card flex items-center gap-4 border-b px-4 py-3">
         <Link href="/messages" className="lg:hidden">
-          <ArrowLeft className="w-6 h-6" />
+          <ArrowLeft className="h-6 w-6" />
         </Link>
 
-        <Avatar className="w-10 h-10">
-          {conversation.otherUser.avatar ? (
-            <Image
-              src={conversation.otherUser.avatar}
-              alt={conversation.otherUser.name}
-              fill
-            />
-          ) : (
-            <div className="w-full h-full bg-primary flex items-center justify-center text-white font-bold">
-              {conversation.otherUser.name.charAt(0)}
-            </div>
-          )}
-        </Avatar>
+        <Link href={`/profile/${conversation.participant.id}`}>
+          <Avatar className="h-10 w-10">
+            {conversation.participant.avatar ? (
+              <Image
+                src={conversation.participant.avatar}
+                alt={conversation.participant.name}
+                fill
+                className="object-cover"
+              />
+            ) : (
+              <div className="bg-primary flex h-full w-full items-center justify-center font-bold text-white">
+                {conversation.participant.name.charAt(0)}
+              </div>
+            )}
+          </Avatar>
+        </Link>
 
         <div className="flex-1">
-          <h2 className="font-semibold">{conversation.otherUser.name}</h2>
           <Link
-            href={`/jobs/${conversation.job.id}`}
-            className="text-sm text-primary hover:underline"
+            href={`/profile/${conversation.participant.id}`}
+            className="font-semibold hover:underline"
           >
-            {conversation.job.title}
+            {conversation.participant.name}
           </Link>
+          {conversation.job && (
+            <Link
+              href={`/jobs/${conversation.job.id}`}
+              className="text-primary block text-sm hover:underline"
+            >
+              {conversation.job.title}
+            </Link>
+          )}
         </div>
 
-        <Link href={`/jobs/${conversation.job.id}`}>
-          <Button variant="ghost" size="sm">
-            <Info className="w-5 h-5" />
-          </Button>
-        </Link>
+        {conversation.job && (
+          <Link href={`/jobs/${conversation.job.id}`}>
+            <Button variant="ghost" size="sm">
+              <Info className="h-5 w-5" />
+            </Button>
+          </Link>
+        )}
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-6">
-        {groupedMessages.map((group) => (
-          <div key={group.date}>
-            <div className="flex justify-center mb-4">
-              <span className="text-xs text-gray-500 bg-white px-3 py-1 rounded-full shadow-sm">
-                {group.date}
-              </span>
-            </div>
-            <div className="space-y-3">
-              {group.messages.map((msg, index) => {
-                const isOwn = msg.senderId === currentUserId;
-                const showAvatar = !isOwn && (index === 0 || group.messages[index - 1].senderId !== msg.senderId);
-
-                return (
-                  <div
-                    key={msg.id}
-                    className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
-                  >
-                    {!isOwn && (
-                      <div className="w-8 mr-2">
-                        {showAvatar && (
-                          <Avatar className="w-8 h-8">
-                            {conversation.otherUser.avatar ? (
-                              <Image
-                                src={conversation.otherUser.avatar}
-                                alt={conversation.otherUser.name}
-                                fill
-                              />
-                            ) : (
-                              <div className="w-full h-full bg-primary flex items-center justify-center text-white text-xs font-bold">
-                                {conversation.otherUser.name.charAt(0)}
-                              </div>
-                            )}
-                          </Avatar>
-                        )}
-                      </div>
-                    )}
-                    <div
-                      className={`max-w-[70%] px-4 py-2 rounded-2xl ${
-                        isOwn
-                          ? 'bg-primary text-white rounded-br-md'
-                          : 'bg-white shadow-sm rounded-bl-md'
-                      }`}
-                    >
-                      <p className="text-sm leading-relaxed">{msg.content}</p>
-                      <p className={`text-xs mt-1 ${
-                        isOwn ? 'text-white/70' : 'text-gray-400'
-                      }`}>
-                        {formatTime(msg.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+      <div className="flex-1 space-y-6 overflow-y-auto p-4">
+        {groupedMessages.length === 0 ? (
+          <div className="flex h-full items-center justify-center">
+            <p className="text-muted-foreground">{t('messages.noMessagesStart')}</p>
           </div>
-        ))}
+        ) : (
+          groupedMessages.map((group) => (
+            <div key={group.date}>
+              <div className="mb-4 flex justify-center">
+                <span className="bg-card text-muted-foreground rounded-full px-3 py-1 text-xs shadow-sm">
+                  {group.date}
+                </span>
+              </div>
+              <div className="space-y-3">
+                {group.messages.map((msg, index) => {
+                  const isOwn = msg.senderId === user?.id;
+                  const showAvatar =
+                    !isOwn && (index === 0 || group.messages[index - 1].senderId !== msg.senderId);
+
+                  return (
+                    <div key={msg.id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
+                      {!isOwn && (
+                        <div className="mr-2 w-8">
+                          {showAvatar && (
+                            <Avatar className="h-8 w-8">
+                              {msg.sender.avatar ? (
+                                <Image
+                                  src={msg.sender.avatar}
+                                  alt={msg.sender.name}
+                                  fill
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="bg-primary flex h-full w-full items-center justify-center text-xs font-bold text-white">
+                                  {msg.sender.name.charAt(0)}
+                                </div>
+                              )}
+                            </Avatar>
+                          )}
+                        </div>
+                      )}
+                      <div
+                        className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                          isOwn
+                            ? 'bg-primary rounded-br-md text-white'
+                            : 'bg-card rounded-bl-md shadow-sm'
+                        }`}
+                      >
+                        <p className="text-sm leading-relaxed">{msg.content}</p>
+                        <p
+                          className={`mt-1 text-xs ${isOwn ? 'text-white/70' : 'text-muted-foreground'}`}
+                        >
+                          {formatTime(msg.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ))
+        )}
         <div ref={messagesEndRef} />
       </div>
 
       {/* Input */}
-      <form onSubmit={handleSend} className="bg-white border-t p-4">
+      <form onSubmit={handleSend} className="bg-card border-t p-4">
         <div className="flex items-center gap-3">
           <button
             type="button"
-            className="w-10 h-10 rounded-full hover:bg-gray-100 flex items-center justify-center transition"
+            className="hover:bg-muted flex h-10 w-10 items-center justify-center rounded-full transition"
           >
-            <ImageIcon className="w-5 h-5 text-gray-500" />
+            <ImageIcon className="text-muted-foreground h-5 w-5" />
           </button>
           <input
             type="text"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 px-4 py-2 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder={t('messages.typeMessage')}
+            className="bg-muted focus:ring-primary flex-1 rounded-full px-4 py-2 focus:outline-none focus:ring-2"
           />
           <Button
             type="submit"
             size="sm"
-            className="rounded-full w-10 h-10 p-0"
-            disabled={!message.trim() || isSending}
+            className="h-10 w-10 rounded-full p-0"
+            disabled={!message.trim() || sendMessageMutation.isPending}
           >
-            <Send className="w-5 h-5" />
+            {sendMessageMutation.isPending ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </form>

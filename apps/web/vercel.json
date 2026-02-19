@@ -1,9 +1,9 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "cd ../.. && pnpm turbo build --filter=@localservices/web",
-  "installCommand": "cd ../.. && pnpm install",
-  "outputDirectory": "apps/web/.next",
+  "buildCommand": "pnpm build",
+  "installCommand": "pnpm install",
+  "outputDirectory": ".next",
   "regions": ["iad1"],
   "env": {
     "ENABLE_EXPERIMENTAL_COREPACK": "1"

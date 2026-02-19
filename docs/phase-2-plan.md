@@ -20,13 +20,14 @@
 
 ### Commission Structure
 
-| Category | Commission Rate |
-|----------|-----------------|
-| Babysitting | 10% |
-| House Cleaning | 12% |
-| Local Food | 15% |
+| Category       | Commission Rate |
+| -------------- | --------------- |
+| Babysitting    | 10%             |
+| House Cleaning | 12%             |
+| Local Food     | 15%             |
 
 **How it works:**
+
 1. Provider completes a job
 2. Client confirms completion
 3. Payment is processed through Stripe
@@ -35,17 +36,18 @@
 
 ### Promotion Tiers
 
-| Tier | Price | Duration | Benefits |
-|------|-------|----------|----------|
-| Basic | $4.99 | 7 days | Highlighted in listings |
-| Premium | $9.99 | 7 days | Top of category, badge |
-| Featured | $19.99 | 7 days | Homepage feature, all Premium benefits |
+| Tier     | Price  | Duration | Benefits                               |
+| -------- | ------ | -------- | -------------------------------------- |
+| Basic    | $4.99  | 7 days   | Highlighted in listings                |
+| Premium  | $9.99  | 7 days   | Top of category, badge                 |
+| Featured | $19.99 | 7 days   | Homepage feature, all Premium benefits |
 
 ---
 
 ## Feature Scope
 
 ### Payment System
+
 - [ ] Stripe Connect integration
 - [ ] Provider onboarding (bank account)
 - [ ] Secure payment collection
@@ -58,6 +60,7 @@
 - [ ] Dispute resolution
 
 ### Promotion System
+
 - [ ] Promotion purchase flow
 - [ ] Tier selection
 - [ ] Payment processing
@@ -68,6 +71,7 @@
 - [ ] Auto-renewal option
 
 ### Enhanced Features
+
 - [ ] Identity verification (ID upload)
 - [ ] Background check integration
 - [ ] Advanced search filters
@@ -79,6 +83,7 @@
 - [ ] Accessibility improvements
 
 ### Provider Dashboard
+
 - [ ] Earnings overview
 - [ ] Payout history
 - [ ] Performance analytics
@@ -87,6 +92,7 @@
 - [ ] Promotion ROI
 
 ### Admin Dashboard
+
 - [ ] User management
 - [ ] Job moderation
 - [ ] Report handling
@@ -132,17 +138,17 @@
 
 ### AWS Services
 
-| Service | Purpose | Estimated Cost |
-|---------|---------|----------------|
-| ECS Fargate | Application hosting | ~$50/month |
-| RDS PostgreSQL | Database | ~$30/month |
-| S3 | File storage | ~$5/month |
-| CloudFront | CDN | ~$10/month |
-| ElastiCache | Redis caching | ~$15/month |
-| SES | Transactional email | ~$5/month |
-| SQS | Background jobs | ~$2/month |
-| CloudWatch | Monitoring | ~$10/month |
-| **Total** | | **~$130/month** |
+| Service        | Purpose             | Estimated Cost  |
+| -------------- | ------------------- | --------------- |
+| ECS Fargate    | Application hosting | ~$50/month      |
+| RDS PostgreSQL | Database            | ~$30/month      |
+| S3             | File storage        | ~$5/month       |
+| CloudFront     | CDN                 | ~$10/month      |
+| ElastiCache    | Redis caching       | ~$15/month      |
+| SES            | Transactional email | ~$5/month       |
+| SQS            | Background jobs     | ~$2/month       |
+| CloudWatch     | Monitoring          | ~$10/month      |
+| **Total**      |                     | **~$130/month** |
 
 ### Database Schema (Additions)
 
@@ -358,6 +364,7 @@ const paymentIntent = await stripe.paymentIntents.create({
 ## Milestones
 
 ### Week 1-3: AWS Migration
+
 - [ ] Setup AWS accounts and IAM
 - [ ] Configure VPC and networking
 - [ ] Deploy RDS PostgreSQL
@@ -368,6 +375,7 @@ const paymentIntent = await stripe.paymentIntents.create({
 - [ ] Configure CI/CD pipeline
 
 ### Week 4-6: Payment Infrastructure
+
 - [ ] Stripe account setup
 - [ ] Implement Connect onboarding
 - [ ] Build payment intent flow
@@ -377,6 +385,7 @@ const paymentIntent = await stripe.paymentIntents.create({
 - [ ] Implement refund handling
 
 ### Week 7-9: Promotion System
+
 - [ ] Design promotion tiers
 - [ ] Build promotion purchase flow
 - [ ] Implement promotion display logic
@@ -385,6 +394,7 @@ const paymentIntent = await stripe.paymentIntents.create({
 - [ ] Implement auto-renewal
 
 ### Week 10-12: Enhanced Features
+
 - [ ] Identity verification
 - [ ] Provider dashboard
 - [ ] Advanced search
@@ -393,6 +403,7 @@ const paymentIntent = await stripe.paymentIntents.create({
 - [ ] Recurring jobs
 
 ### Week 13-15: Admin & Polish
+
 - [ ] Build admin dashboard
 - [ ] User management
 - [ ] Content moderation
@@ -401,6 +412,7 @@ const paymentIntent = await stripe.paymentIntents.create({
 - [ ] Performance optimization
 
 ### Week 16: Launch
+
 - [ ] Security audit
 - [ ] Load testing
 - [ ] Documentation
@@ -439,12 +451,14 @@ async function migrateImages() {
 
     // Upload to S3
     const key = `jobs/${image.jobId}/${image.id}.jpg`;
-    await s3.upload({
-      Bucket: 'localservices-images',
-      Key: key,
-      Body: buffer,
-      ContentType: 'image/jpeg',
-    }).promise();
+    await s3
+      .upload({
+        Bucket: 'localservices-images',
+        Key: key,
+        Body: buffer,
+        ContentType: 'image/jpeg',
+      })
+      .promise();
 
     // Update database
     await prisma.jobImage.update({
@@ -461,75 +475,75 @@ async function migrateImages() {
 
 ### Month 1-3 (Transition)
 
-| Source | Projection |
-|--------|------------|
-| Google Ads (continuing) | $300/month |
-| Commissions (10% avg) | $500/month |
-| Promotions | $200/month |
-| **Total** | **$1,000/month** |
+| Source                  | Projection       |
+| ----------------------- | ---------------- |
+| Google Ads (continuing) | $300/month       |
+| Commissions (10% avg)   | $500/month       |
+| Promotions              | $200/month       |
+| **Total**               | **$1,000/month** |
 
 ### Month 4-6 (Growth)
 
-| Source | Projection |
-|--------|------------|
-| Google Ads | $500/month |
-| Commissions | $2,000/month |
-| Promotions | $800/month |
-| **Total** | **$3,300/month** |
+| Source      | Projection       |
+| ----------- | ---------------- |
+| Google Ads  | $500/month       |
+| Commissions | $2,000/month     |
+| Promotions  | $800/month       |
+| **Total**   | **$3,300/month** |
 
 ### Month 7-12 (Scale)
 
-| Source | Projection |
-|--------|------------|
-| Google Ads | $800/month |
-| Commissions | $8,000/month |
-| Promotions | $2,500/month |
-| **Total** | **$11,300/month** |
+| Source      | Projection        |
+| ----------- | ----------------- |
+| Google Ads  | $800/month        |
+| Commissions | $8,000/month      |
+| Promotions  | $2,500/month      |
+| **Total**   | **$11,300/month** |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target (Month 3) | Target (Month 6) |
-|--------|------------------|------------------|
-| Monthly Active Users | 5,000 | 15,000 |
-| Jobs Completed | 1,000 | 4,000 |
-| Provider Onboarded | 200 | 800 |
-| Gross Transaction Value | $50,000 | $200,000 |
-| Commission Revenue | $5,000 | $20,000 |
-| Promotion Revenue | $1,500 | $5,000 |
-| Provider Retention | 70% | 75% |
+| Metric                  | Target (Month 3) | Target (Month 6) |
+| ----------------------- | ---------------- | ---------------- |
+| Monthly Active Users    | 5,000            | 15,000           |
+| Jobs Completed          | 1,000            | 4,000            |
+| Provider Onboarded      | 200              | 800              |
+| Gross Transaction Value | $50,000          | $200,000         |
+| Commission Revenue      | $5,000           | $20,000          |
+| Promotion Revenue       | $1,500           | $5,000           |
+| Provider Retention      | 70%              | 75%              |
 
 ---
 
 ## Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| Migration downtime | User churn | Blue-green deployment |
-| Payment fraud | Financial loss | Stripe Radar, manual review |
-| User resistance to fees | Adoption drop | Gradual rollout, communication |
-| AWS cost overrun | Budget impact | Cost alerts, reserved instances |
-| Stripe account issues | Payment blocked | Backup processor, compliance |
+| Risk                    | Impact          | Mitigation                      |
+| ----------------------- | --------------- | ------------------------------- |
+| Migration downtime      | User churn      | Blue-green deployment           |
+| Payment fraud           | Financial loss  | Stripe Radar, manual review     |
+| User resistance to fees | Adoption drop   | Gradual rollout, communication  |
+| AWS cost overrun        | Budget impact   | Cost alerts, reserved instances |
+| Stripe account issues   | Payment blocked | Backup processor, compliance    |
 
 ---
 
 ## Budget (Phase 2)
 
-| Item | Monthly Cost |
-|------|--------------|
-| AWS Infrastructure | $130 |
-| Stripe fees (2.9% + $0.30) | Variable |
-| Domain & SSL | $2 |
-| Error tracking (Sentry Pro) | $26 |
-| Analytics (Mixpanel) | $0 (free tier) |
-| **Total Fixed** | **~$160/month** |
+| Item                        | Monthly Cost    |
+| --------------------------- | --------------- |
+| AWS Infrastructure          | $130            |
+| Stripe fees (2.9% + $0.30)  | Variable        |
+| Domain & SSL                | $2              |
+| Error tracking (Sentry Pro) | $26             |
+| Analytics (Mixpanel)        | $0 (free tier)  |
+| **Total Fixed**             | **~$160/month** |
 
 ### One-Time Costs
 
-| Item | Cost |
-|------|------|
-| Security audit | $2,000 |
-| Legal review (ToS, Privacy) | $1,500 |
-| Background check API setup | $500 |
-| **Total** | **$4,000** |
+| Item                        | Cost       |
+| --------------------------- | ---------- |
+| Security audit              | $2,000     |
+| Legal review (ToS, Privacy) | $1,500     |
+| Background check API setup  | $500       |
+| **Total**                   | **$4,000** |

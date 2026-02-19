@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@localservices/database';
+import { prisma, Prisma } from '@localservices/database';
 import { createJobSchema, jobFiltersSchema } from '@localservices/shared';
 import {
   authenticate,
   unauthorizedResponse,
+  forbiddenResponse,
   validationErrorResponse,
-  serverErrorResponse,
 } from '@/lib/auth-middleware';
-import { Prisma } from '@prisma/client';
+import { moderateFields } from '@/lib/content-moderation';
+import { withLogging } from '@/lib/api-handler';
+import '@/lib/db'; // registers query logging middleware
 
-export async function GET(request: NextRequest) {
-  try {
+export const GET = withLogging(
+  async (request: NextRequest) => {
     const { searchParams } = new URL(request.url);
     const params = Object.fromEntries(searchParams.entries());
 
@@ -24,11 +26,17 @@ export async function GET(request: NextRequest) {
     const { page = 1, limit = 20 } = filters;
     const skip = (page - 1) * limit;
 
-    // Build where clause
-    const where: Prisma.JobWhereInput = {};
+    // Build where clause - exclude LOCAL_FOOD (now standalone)
+    const where: Prisma.JobWhereInput = {
+      category: { not: 'LOCAL_FOOD' },
+    };
 
     if (filters.category) {
       where.category = filters.category;
+    }
+
+    if (filters.jobType) {
+      where.jobType = filters.jobType;
     }
 
     if (filters.status) {
@@ -50,6 +58,14 @@ export async function GET(request: NextRequest) {
         { title: { contains: filters.search, mode: 'insensitive' } },
         { description: { contains: filters.search, mode: 'insensitive' } },
       ];
+    }
+
+    if (filters.posterId) {
+      where.posterId = filters.posterId;
+    }
+
+    if (filters.providerId) {
+      where.providerId = filters.providerId;
     }
 
     // Build order by
@@ -114,14 +130,12 @@ export async function GET(request: NextRequest) {
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch (error) {
-    console.error('List jobs error:', error);
-    return serverErrorResponse();
-  }
-}
+  },
+  { route: '/api/jobs' }
+);
 
-export async function POST(request: NextRequest) {
-  try {
+export const POST = withLogging(
+  async (request: NextRequest) => {
     const authUser = await authenticate(request);
     if (!authUser) {
       return unauthorizedResponse();
@@ -136,6 +150,27 @@ export async function POST(request: NextRequest) {
     }
 
     const data = validationResult.data;
+
+    // Block LOCAL_FOOD category (now standalone)
+    if (data.category === 'LOCAL_FOOD') {
+      return forbiddenResponse('Local food has its own marketplace. Use /local-food instead.');
+    }
+
+    // Role-based access: providers can post SERVICE_OFFERING, anyone can post SERVICE_REQUEST
+    if (data.jobType === 'SERVICE_OFFERING') {
+      if (authUser.role !== 'PROVIDER' && authUser.role !== 'ADMIN') {
+        return forbiddenResponse('Only providers can post service offerings');
+      }
+    }
+
+    // Content moderation: block contact info in title/description
+    const moderation = moderateFields({
+      Title: data.title,
+      Description: data.description,
+    });
+    if (!moderation.isClean) {
+      return validationErrorResponse([{ message: moderation.reason }]);
+    }
 
     const job = await prisma.job.create({
       data: {
@@ -163,8 +198,6 @@ export async function POST(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (error) {
-    console.error('Create job error:', error);
-    return serverErrorResponse();
-  }
-}
+  },
+  { route: '/api/jobs' }
+);

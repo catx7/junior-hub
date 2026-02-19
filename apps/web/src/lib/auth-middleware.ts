@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@localservices/database';
 import { verifyIdToken } from './firebase-admin';
+import { logger } from './logger';
 
 export interface AuthenticatedRequest extends NextRequest {
   user: {
@@ -35,7 +36,7 @@ export async function authenticate(request: NextRequest) {
 
     return user;
   } catch (error) {
-    console.error('Auth error:', error);
+    logger.warn('Auth token verification failed', { error });
     return null;
   }
 }
@@ -52,12 +53,12 @@ export function unauthorizedResponse() {
   );
 }
 
-export function forbiddenResponse() {
+export function forbiddenResponse(message?: string) {
   return NextResponse.json(
     {
       error: {
         code: 'FORBIDDEN',
-        message: 'You do not have permission to perform this action',
+        message: message || 'You do not have permission to perform this action',
       },
     },
     { status: 403 }

@@ -1,10 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@localservices/database';
-import { registerSchema } from '@localservices/shared';
+import { z } from 'zod';
 import { verifyIdToken } from '@/lib/firebase-admin';
+import { withLogging } from '@/lib/api-handler';
 
-export async function POST(request: NextRequest) {
-  try {
+// Server-side schema: only name & email needed (password is handled by Firebase)
+const serverRegisterSchema = z.object({
+  name: z.string().min(2, 'Name must be at least 2 characters').max(100),
+  email: z.string().email('Invalid email address'),
+});
+
+export const POST = withLogging(
+  async (request: NextRequest) => {
     // Get auth token from header - REQUIRED for registration
     const authHeader = request.headers.get('Authorization');
     const token = authHeader?.replace('Bearer ', '');
@@ -41,7 +48,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate input
-    const validationResult = registerSchema.safeParse(body);
+    const validationResult = serverRegisterSchema.safeParse(body);
     if (!validationResult.success) {
       return NextResponse.json(
         {
@@ -95,16 +102,6 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(user, { status: 201 });
-  } catch (error) {
-    console.error('Registration error:', error);
-    return NextResponse.json(
-      {
-        error: {
-          code: 'INTERNAL_ERROR',
-          message: 'Failed to create user',
-        },
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { route: '/api/auth/register' }
+);

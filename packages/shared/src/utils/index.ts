@@ -67,10 +67,7 @@ export function formatDate(
 /**
  * Format a date with time
  */
-export function formatDateTime(
-  date: Date | string,
-  locale: string = 'en-US'
-): string {
+export function formatDateTime(date: Date | string, locale: string = 'en-US'): string {
   return new Intl.DateTimeFormat(locale, {
     year: 'numeric',
     month: 'short',
@@ -83,12 +80,7 @@ export function formatDateTime(
 /**
  * Calculate distance between two geo points (Haversine formula)
  */
-export function calculateDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
+export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371; // Earth's radius in kilometers
   const dLat = toRad(lat2 - lat1);
   const dLon = toRad(lon2 - lon1);
@@ -261,7 +253,9 @@ export function parseQueryString(queryString: string): Record<string, string> {
 /**
  * Build query string from object
  */
-export function buildQueryString(params: Record<string, string | number | boolean | undefined>): string {
+export function buildQueryString(
+  params: Record<string, string | number | boolean | undefined>
+): string {
   const searchParams = new URLSearchParams();
   Object.entries(params).forEach(([key, value]) => {
     if (value !== undefined && value !== null && value !== '') {
@@ -274,7 +268,10 @@ export function buildQueryString(params: Record<string, string | number | boolea
 /**
  * Get star rating display (filled vs empty stars)
  */
-export function getStarRating(rating: number, maxStars: number = 5): { filled: number; half: boolean; empty: number } {
+export function getStarRating(
+  rating: number,
+  maxStars: number = 5
+): { filled: number; half: boolean; empty: number } {
   const filled = Math.floor(rating);
   const half = rating % 1 >= 0.5;
   const empty = maxStars - filled - (half ? 1 : 0);
@@ -315,4 +312,78 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
  */
 export function pluralize(count: number, singular: string, plural: string): string {
   return count === 1 ? singular : plural;
+}
+
+// Known valid image hosting domains and patterns
+const VALID_IMAGE_PATTERNS = [
+  // Cloud storage
+  /cloudinary\.com/,
+  /amazonaws\.com/,
+  /googleusercontent\.com/,
+  /firebasestorage\.googleapis\.com/,
+  /supabase\.(co|io)/,
+  /blob\.core\.windows\.net/,
+  /digitaloceanspaces\.com/,
+  /imgix\.net/,
+  /res\.cloudinary\.com/,
+  // Image CDNs
+  /cdn\.jsdelivr\.net/,
+  /images\.unsplash\.com/,
+  /i\.imgur\.com/,
+  /pbs\.twimg\.com/,
+  /avatars\.githubusercontent\.com/,
+  /picsum\.photos/,
+  /placehold/,
+  // Common image extensions in URL
+  /\.(jpg|jpeg|png|gif|webp|svg|avif|bmp|ico)(\?|$)/i,
+  // Data URLs
+  /^data:image\//,
+];
+
+// URLs that are definitely NOT images
+const INVALID_URL_PATTERNS = [
+  /^https?:\/\/(www\.)?(google|facebook|twitter|youtube|amazon|wikipedia|reddit)\.com\/?$/i,
+  /^https?:\/\/[^\/]+\/?$/, // Root domain with no path (like google.com/)
+];
+
+/**
+ * Validates if a URL is likely to be a valid image URL
+ * Returns false for blank pages like google.com
+ */
+export function isValidImageUrl(url: string | null | undefined): boolean {
+  if (!url) return false;
+
+  // Trim and check for empty
+  const trimmedUrl = url.trim();
+  if (!trimmedUrl) return false;
+
+  // Check if it's an invalid pattern (like google.com)
+  if (INVALID_URL_PATTERNS.some((pattern) => pattern.test(trimmedUrl))) {
+    return false;
+  }
+
+  // Check if it matches known image patterns
+  if (VALID_IMAGE_PATTERNS.some((pattern) => pattern.test(trimmedUrl))) {
+    return true;
+  }
+
+  // For other URLs, try to parse and check if path has image extension
+  try {
+    const urlObj = new URL(trimmedUrl);
+    const pathname = urlObj.pathname.toLowerCase();
+    // Check for image extension in path
+    if (/\.(jpg|jpeg|png|gif|webp|svg|avif|bmp|ico)$/i.test(pathname)) {
+      return true;
+    }
+    // Check for image-related path segments
+    if (/\/(image|img|photo|media|upload|asset)/i.test(pathname)) {
+      return true;
+    }
+  } catch {
+    // Invalid URL
+    return false;
+  }
+
+  // Default: allow but let runtime handle errors
+  return true;
 }

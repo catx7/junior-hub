@@ -50,11 +50,7 @@ export async function signInWithEmail(email: string, password: string) {
   return signInWithEmailAndPassword(auth, email, password);
 }
 
-export async function signUpWithEmail(
-  email: string,
-  password: string,
-  displayName: string
-) {
+export async function signUpWithEmail(email: string, password: string, displayName: string) {
   const result = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(result.user, { displayName });
   return result;
@@ -78,5 +74,5 @@ export async function getIdToken(): Promise<string | null> {
   return user.getIdToken();
 }
 
-export { auth };
+export { app, auth };
 export type { User };
