@@ -18,6 +18,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
+import { useTranslation } from '@/hooks/use-translation';
 import { getIdToken } from '@/lib/firebase';
 import { toast } from 'sonner';
 
@@ -124,6 +125,7 @@ function getNotificationLink(notification: Notification): string {
 export default function NotificationsPage() {
   const queryClient = useQueryClient();
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const { t } = useTranslation();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['notifications'],
@@ -156,10 +158,10 @@ export default function NotificationsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      toast.success('All notifications marked as read');
+      toast.success(t('success.markedAsRead'));
     },
     onError: () => {
-      toast.error('Failed to mark notifications as read');
+      toast.error(t('errors.failedToUpdate'));
     },
   });
 
@@ -179,10 +181,10 @@ export default function NotificationsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      toast.success('All notifications cleared');
+      toast.success(t('success.cleared'));
     },
     onError: () => {
-      toast.error('Failed to clear notifications');
+      toast.error(t('errors.failedToDelete'));
     },
   });
 

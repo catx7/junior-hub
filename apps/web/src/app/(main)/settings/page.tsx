@@ -26,7 +26,7 @@ import { LOCALES } from '@localservices/shared';
 export default function SettingsPage() {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const { locale } = useTranslation();
+  const { t, locale } = useTranslation();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -39,7 +39,7 @@ export default function SettingsPage() {
       await logout();
       router.push('/');
     } catch (error) {
-      toast.error('Failed to logout');
+      toast.error(t('common.error'));
     }
   };
 
@@ -55,52 +55,52 @@ export default function SettingsPage() {
     }>;
   }> = [
     {
-      title: 'Account',
+      title: t('settings.account'),
       items: [
         {
           icon: User,
-          label: 'Profile',
-          description: 'Manage your personal information',
+          label: t('nav.profile'),
+          description: t('settings.manageProfile'),
           href: '/profile/edit',
         },
         {
           icon: Lock,
-          label: 'Privacy & Security',
-          description: 'Password, 2FA, and privacy settings',
+          label: t('settings.privacySecurity'),
+          description: t('settings.privacySecurityDesc'),
           href: '/settings/security',
         },
       ],
     },
     {
-      title: 'Preferences',
+      title: t('settings.title'),
       items: [
         {
           icon: Globe,
-          label: 'Language',
+          label: t('settings.language'),
           description: LOCALES[locale as keyof typeof LOCALES]?.nativeName || 'English',
           href: '/settings/language',
         },
         {
           icon: isDarkMode ? Moon : Sun,
-          label: 'Theme',
-          description: isDarkMode ? 'Dark mode' : 'Light mode',
+          label: t('settings.theme'),
+          description: isDarkMode ? t('settings.darkMode') : t('settings.lightMode'),
           onClick: () => setTheme(isDarkMode ? 'light' : 'dark'),
         },
       ],
     },
     {
-      title: 'Support',
+      title: t('settings.help'),
       items: [
         {
           icon: HelpCircle,
-          label: 'Help Center',
-          description: 'Get help and support',
+          label: t('settings.help'),
+          description: t('settings.help'),
           href: '/help',
         },
         {
           icon: Shield,
-          label: 'Terms & Privacy',
-          description: 'Legal information',
+          label: t('settings.privacy'),
+          description: t('settings.legalInfo'),
           href: '/terms',
         },
       ],
@@ -114,8 +114,8 @@ export default function SettingsPage() {
       items: [
         {
           icon: Shield,
-          label: 'Admin Dashboard',
-          description: 'Manage platform and users',
+          label: t('settings.adminDashboard'),
+          description: t('settings.adminDashboardDesc'),
           href: '/admin',
           badge: 'ADMIN',
         },
@@ -130,8 +130,8 @@ export default function SettingsPage() {
       items: [
         {
           icon: Shield,
-          label: 'Become a Provider',
-          description: 'Apply to offer services on the platform',
+          label: t('settings.becomeProvider'),
+          description: t('settings.becomeProviderDesc'),
           href: '/settings/become-provider',
         },
       ],
@@ -143,8 +143,8 @@ export default function SettingsPage() {
       <div className="mx-auto max-w-3xl px-4">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-foreground text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground mt-1">Manage your account and preferences</p>
+          <h1 className="text-foreground text-3xl font-bold">{t('settings.title')}</h1>
+          <p className="text-muted-foreground mt-1">{t('settings.pageSubtitle')}</p>
         </div>
 
         {/* User Info Card */}
@@ -157,8 +157,12 @@ export default function SettingsPage() {
               <p className="text-foreground text-lg font-semibold">{user?.name}</p>
               <p className="text-muted-foreground text-sm">{user?.email}</p>
               <div className="mt-1 flex gap-2">
-                {user?.isVerified && <Badge className="bg-green-600">Verified</Badge>}
-                {user?.role === 'PROVIDER' && <Badge className="bg-blue-600">Provider</Badge>}
+                {user?.isVerified && (
+                  <Badge className="bg-green-600">{t('profile.verified')}</Badge>
+                )}
+                {user?.role === 'PROVIDER' && (
+                  <Badge className="bg-blue-600">{t('reviews.provider')}</Badge>
+                )}
                 {user?.role === 'ADMIN' && <Badge className="bg-purple-600">Admin</Badge>}
               </div>
             </div>
@@ -213,32 +217,30 @@ export default function SettingsPage() {
         {/* Danger Zone */}
         <Card className="border-destructive/30 bg-destructive/5 mt-8 p-6">
           <h2 className="text-destructive mb-4 text-sm font-semibold uppercase tracking-wider">
-            Danger Zone
+            {t('settings.dangerZone')}
           </h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-foreground font-medium">Log Out</p>
-                <p className="text-muted-foreground text-sm">Sign out of your account</p>
+                <p className="text-foreground font-medium">{t('auth.logout')}</p>
+                <p className="text-muted-foreground text-sm">{t('settings.logOutDesc')}</p>
               </div>
               <Button variant="outline" onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
-                Log Out
+                {t('auth.logout')}
               </Button>
             </div>
             <div className="border-destructive/30 flex items-center justify-between border-t pt-4">
               <div>
-                <p className="text-destructive font-medium">Delete Account</p>
-                <p className="text-destructive/80 text-sm">
-                  Permanently delete your account and data
-                </p>
+                <p className="text-destructive font-medium">{t('settings.deleteAccount')}</p>
+                <p className="text-destructive/80 text-sm">{t('settings.deleteAccountFull')}</p>
               </div>
               <Button
                 variant="outline"
                 className="border-destructive text-destructive hover:bg-destructive/10"
-                onClick={() => toast.error('Feature coming soon')}
+                onClick={() => toast.error(t('settings.featureComingSoon'))}
               >
-                Delete Account
+                {t('settings.deleteAccount')}
               </Button>
             </div>
           </div>
@@ -246,8 +248,8 @@ export default function SettingsPage() {
 
         {/* App Info */}
         <div className="text-muted-foreground mt-8 text-center text-sm">
-          <p>JuniorHub v1.0.0</p>
-          <p className="mt-1">Made with care for families</p>
+          <p>{t('settings.appVersion')}</p>
+          <p className="mt-1">{t('settings.madeWithCare')}</p>
         </div>
       </div>
     </div>

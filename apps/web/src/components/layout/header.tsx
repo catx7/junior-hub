@@ -35,6 +35,7 @@ import { NotificationBell } from '@/components/notifications/notification-bell';
 const navLinks = [
   { href: '/', labelKey: 'nav.home' },
   { href: '/jobs', labelKey: 'nav.browse' },
+  { href: '/providers', labelKey: 'nav.providers' },
 ];
 
 const communityLinks = [
@@ -309,7 +310,7 @@ export function Header() {
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
                   className={cn(
-                    'hover:bg-muted rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                    'hover:bg-muted rounded-lg px-3 py-3 text-sm font-medium transition-colors',
                     pathname === link.href ? 'bg-muted text-primary' : 'text-muted-foreground'
                   )}
                 >
@@ -323,7 +324,7 @@ export function Header() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className="hover:bg-muted text-muted-foreground flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium"
+                    className="hover:bg-muted text-muted-foreground flex items-center gap-2 rounded-lg px-3 py-3 text-sm font-medium"
                   >
                     <Icon className="h-4 w-4" />
                     {t(link.labelKey)}
@@ -342,7 +343,7 @@ export function Header() {
               )}
               <button
                 onClick={toggleLocale}
-                className="text-muted-foreground hover:bg-muted flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium"
+                className="text-muted-foreground hover:bg-muted flex items-center space-x-2 rounded-lg px-3 py-3 text-sm font-medium"
               >
                 <Globe className="h-4 w-4" />
                 <span>{locale === 'en' ? 'Română' : 'English'}</span>
@@ -350,10 +351,10 @@ export function Header() {
               {mounted && (
                 <button
                   onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                  className="text-muted-foreground hover:bg-muted flex items-center space-x-2 rounded-lg px-3 py-2 text-sm font-medium"
+                  className="text-muted-foreground hover:bg-muted flex items-center space-x-2 rounded-lg px-3 py-3 text-sm font-medium"
                 >
                   {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                  <span>{theme === 'dark' ? t('settings.lightMode') : t('settings.darkMode')}</span>
                 </button>
               )}
             </div>

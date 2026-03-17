@@ -53,7 +53,14 @@ async function fetchWithAuth(endpoint: string, options: FetchOptions = {}): Prom
 
 // Auth API
 export const authApi = {
-  register: async (data: { email: string; password: string; name: string }) => {
+  register: async (data: {
+    email: string;
+    password: string;
+    name: string;
+    consentTerms?: boolean;
+    consentAge?: boolean;
+    consentMarketing?: boolean;
+  }) => {
     const res = await fetchWithAuth('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
@@ -269,6 +276,38 @@ export const conversationsApi = {
     const res = await fetchWithAuth(`/api/conversations/${id}/messages`, {
       method: 'POST',
       body: JSON.stringify({ content, imageUrl }),
+    });
+    return res.json();
+  },
+};
+
+// Providers API
+export const providersApi = {
+  createProfile: async (data: Record<string, unknown>) => {
+    const res = await fetchWithAuth('/api/providers/profile', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  getMyProfile: async () => {
+    const res = await fetchWithAuth('/api/providers/profile');
+    return res.json();
+  },
+
+  search: async (params?: Record<string, string | number | boolean | undefined>) => {
+    const searchParams = new URLSearchParams();
+    if (params) {
+      Object.entries(params).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          searchParams.append(key, String(value));
+        }
+      });
+    }
+    const query = searchParams.toString();
+    const res = await fetchWithAuth(`/api/providers${query ? `?${query}` : ''}`, {
+      skipAuth: true,
     });
     return res.json();
   },

@@ -1,44 +1,97 @@
-'use client';
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight, Star, Shield, Clock, MapPin, Search } from 'lucide-react';
+import {
+  ArrowRight,
+  Star,
+  Shield,
+  Clock,
+  MapPin,
+  FileText,
+  MessageCircle,
+  CheckCircle,
+} from 'lucide-react';
+import { CategoryIcon } from '@/components/ui/category-icon';
 import { Button, Card, CardContent, Badge, UserAvatar } from '@/components/ui';
-import { useTranslation } from '@/hooks/use-translation';
-import { useAuth } from '@/hooks/use-auth';
-import { useJobs } from '@/hooks/use-jobs';
-import { SERVICE_CATEGORIES, JOB_STATUSES } from '@localservices/shared';
+import { HomeSearchBar } from '@/components/home-search-bar';
+import { t } from '@localservices/shared';
+import { SERVICE_CATEGORIES } from '@localservices/shared';
 import { formatPrice, formatRelativeTime } from '@/lib/utils';
+import { prisma } from '@localservices/database';
 
-export default function HomePage() {
-  const { t } = useTranslation();
-  const { isAuthenticated } = useAuth();
-  const { data: jobsData, isLoading } = useJobs({ status: 'OPEN', limit: 6 });
+export const revalidate = 60;
+
+async function getRecentJobs() {
+  const jobs = await prisma.job.findMany({
+    where: {
+      status: 'OPEN',
+      category: { not: 'LOCAL_FOOD' },
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 6,
+    include: {
+      poster: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+        },
+      },
+      images: {
+        orderBy: { order: 'asc' },
+        take: 1,
+      },
+      promotion: {
+        where: {
+          isActive: true,
+          endDate: { gte: new Date() },
+        },
+      },
+    },
+  });
+
+  return jobs.map((job) => ({
+    id: job.id,
+    title: job.title,
+    location: job.location,
+    budget: Number(job.budget),
+    currency: job.currency,
+    category: job.category,
+    createdAt: job.createdAt.toISOString(),
+    isPromoted: !!job.promotion,
+    poster: job.poster,
+    image: job.images[0]?.url || null,
+  }));
+}
+
+const tr = (key: string) => t('ro', key);
+
+export default async function HomePage() {
+  const jobs = await getRecentJobs();
 
   const categories = Object.values(SERVICE_CATEGORIES).filter((c) => c.id !== 'OTHER');
 
   const stats = [
-    { value: '10K+', label: t('homepage.activeUsers') },
-    { value: '5K+', label: t('homepage.jobsCompletedStat') },
-    { value: '4.9', label: t('homepage.averageRating') },
-    { value: '24/7', label: t('homepage.support') },
+    { value: '10K+', label: tr('homepage.activeUsers') },
+    { value: '5K+', label: tr('homepage.jobsCompletedStat') },
+    { value: '4.9', label: tr('homepage.averageRating') },
+    { value: '24/7', label: tr('homepage.support') },
   ];
 
   const features = [
     {
       icon: Shield,
-      title: t('homepage.verifiedProviders'),
-      description: t('homepage.verifiedProvidersDesc'),
+      title: tr('homepage.verifiedProviders'),
+      description: tr('homepage.verifiedProvidersDesc'),
     },
     {
       icon: Star,
-      title: t('homepage.ratedReviewed'),
-      description: t('homepage.ratedReviewedDesc'),
+      title: tr('homepage.ratedReviewed'),
+      description: tr('homepage.ratedReviewedDesc'),
     },
     {
       icon: Clock,
-      title: t('homepage.quickResponse'),
-      description: t('homepage.quickResponseDesc'),
+      title: tr('homepage.quickResponse'),
+      description: tr('homepage.quickResponseDesc'),
     },
   ];
 
@@ -49,41 +102,18 @@ export default function HomePage() {
         <div className="container-custom">
           <div className="mx-auto max-w-3xl text-center">
             <Badge variant="secondary" className="mb-4">
-              {t('homepage.trustedByUsers')}
+              {tr('homepage.trustedByUsers')}
             </Badge>
             <h1 className="mb-6 text-4xl font-bold tracking-tight md:text-6xl">
-              Find Trusted <span className="text-primary">Local Services</span> Near You
+              {tr('homepage.heroTitle').split(tr('homepage.heroTitleHighlight'))[0]}
+              <span className="text-primary">{tr('homepage.heroTitleHighlight')}</span>
+              {tr('homepage.heroTitle').split(tr('homepage.heroTitleHighlight'))[1] || ''}
             </h1>
             <p className="text-muted-foreground mb-8 text-lg md:text-xl">
-              {t('homepage.heroDesc')}
+              {tr('homepage.heroDesc')}
             </p>
 
-            {/* Search Bar */}
-            <div className="mx-auto max-w-2xl">
-              <div className="dark:bg-card flex flex-col gap-3 rounded-2xl bg-white p-2 shadow-lg sm:flex-row">
-                <div className="relative flex-1">
-                  <Search className="text-muted-foreground absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder={t('jobs.searchPlaceholder')}
-                    className="bg-muted/50 focus:ring-primary h-12 w-full rounded-xl pl-12 pr-4 focus:outline-none focus:ring-2"
-                  />
-                </div>
-                <div className="relative flex-1">
-                  <MapPin className="text-muted-foreground absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder={t('homepage.locationPlaceholder')}
-                    className="bg-muted/50 focus:ring-primary h-12 w-full rounded-xl pl-12 pr-4 focus:outline-none focus:ring-2"
-                  />
-                </div>
-                <Link href="/jobs">
-                  <Button size="lg" className="h-12 w-full sm:w-auto">
-                    {t('common.search')}
-                  </Button>
-                </Link>
-              </div>
-            </div>
+            <HomeSearchBar />
           </div>
         </div>
 
@@ -96,8 +126,8 @@ export default function HomePage() {
       <section className="py-16 md:py-24">
         <div className="container-custom">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold">{t('jobs.popularCategories')}</h2>
-            <p className="text-muted-foreground">{t('homepage.chooseCategories')}</p>
+            <h2 className="mb-4 text-3xl font-bold">{tr('jobs.popularCategories')}</h2>
+            <p className="text-muted-foreground">{tr('homepage.chooseCategories')}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -121,12 +151,16 @@ export default function HomePage() {
                       className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg"
                       style={{ backgroundColor: `${category.color}20` }}
                     >
-                      <span style={{ color: category.color }}>{category.icon}</span>
+                      <CategoryIcon
+                        name={category.icon}
+                        className="h-5 w-5"
+                        style={{ color: category.color }}
+                      />
                     </div>
                     <h3 className="group-hover:text-primary mb-2 text-xl font-semibold">
-                      {t(category.labelKey)}
+                      {tr(category.labelKey)}
                     </h3>
-                    <p className="text-muted-foreground">{t(`${category.labelKey}Desc`)}</p>
+                    <p className="text-muted-foreground">{tr(`${category.labelKey}Desc`)}</p>
                   </CardContent>
                 </Card>
               </Link>
@@ -149,62 +183,89 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-16 md:py-24">
+        <div className="container-custom">
+          <div className="mb-12 text-center">
+            <h2 className="mb-4 text-3xl font-bold">{tr('homepage.howItWorks')}</h2>
+            <p className="text-muted-foreground">{tr('homepage.howItWorksDesc')}</p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            {[
+              {
+                icon: FileText,
+                step: '1',
+                title: tr('homepage.step1Title'),
+                desc: tr('homepage.step1Desc'),
+              },
+              {
+                icon: MessageCircle,
+                step: '2',
+                title: tr('homepage.step2Title'),
+                desc: tr('homepage.step2Desc'),
+              },
+              {
+                icon: CheckCircle,
+                step: '3',
+                title: tr('homepage.step3Title'),
+                desc: tr('homepage.step3Desc'),
+              },
+            ].map((item) => (
+              <div key={item.step} className="relative text-center">
+                <div className="bg-primary/10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl">
+                  <item.icon className="text-primary h-8 w-8" />
+                </div>
+                <div className="bg-primary absolute -top-2 left-1/2 flex h-7 w-7 -translate-x-1/2 items-center justify-center rounded-full text-xs font-bold text-white">
+                  {item.step}
+                </div>
+                <h3 className="mb-2 text-xl font-semibold">{item.title}</h3>
+                <p className="text-muted-foreground">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Recent Jobs Section */}
       <section className="py-16 md:py-24">
         <div className="container-custom">
           <div className="mb-12 flex items-center justify-between">
             <div>
-              <h2 className="mb-2 text-3xl font-bold">{t('jobs.recentJobs')}</h2>
-              <p className="text-muted-foreground">{t('homepage.latestOpportunities')}</p>
+              <h2 className="mb-2 text-3xl font-bold">{tr('jobs.recentJobs')}</h2>
+              <p className="text-muted-foreground">{tr('homepage.latestOpportunities')}</p>
             </div>
             <Link href="/jobs">
               <Button variant="outline">
-                {t('common.seeAll')}
+                {tr('common.seeAll')}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
           </div>
 
-          {isLoading ? (
-            <div className="grid-cards">
-              {[...Array(6)].map((_, i) => (
-                <Card key={i} className="overflow-hidden">
-                  <div className="aspect-card bg-muted animate-pulse" />
-                  <CardContent className="p-4">
-                    <div className="bg-muted mb-2 h-4 w-3/4 animate-pulse rounded" />
-                    <div className="bg-muted h-3 w-1/2 animate-pulse rounded" />
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+          {jobs.length === 0 ? (
+            <p className="text-muted-foreground py-12 text-center">{tr('jobs.noJobsFound')}</p>
           ) : (
             <div className="grid-cards">
-              {jobsData?.data?.map((job: any) => (
-                <Link
-                  key={job.id}
-                  href={
-                    isAuthenticated
-                      ? `/jobs/${job.id}`
-                      : '/register?message=Create an account to view job details and make offers'
-                  }
-                >
+              {jobs.map((job) => (
+                <Link key={job.id} href={`/jobs/${job.id}`}>
                   <Card className="group h-full overflow-hidden transition-all hover:shadow-lg">
                     <div className="aspect-card bg-muted relative overflow-hidden">
-                      {job.images?.[0] ? (
+                      {job.image ? (
                         <Image
-                          src={job.images[0].url}
+                          src={job.image}
                           alt={job.title}
                           fill
                           className="object-cover transition-transform group-hover:scale-105"
                         />
                       ) : (
                         <div className="text-muted-foreground flex h-full items-center justify-center">
-                          {t('homepage.noImage')}
+                          {tr('homepage.noImage')}
                         </div>
                       )}
                       {job.isPromoted && (
                         <Badge className="absolute left-3 top-3" variant="default">
-                          {t('jobs.featured')}
+                          {tr('jobs.featured')}
                         </Badge>
                       )}
                     </div>
@@ -221,13 +282,13 @@ export default function HomePage() {
                                 ?.color,
                           }}
                         >
-                          {t(
+                          {tr(
                             SERVICE_CATEGORIES[job.category as keyof typeof SERVICE_CATEGORIES]
                               ?.labelKey || 'categories.other'
                           )}
                         </Badge>
                         <span className="text-primary text-lg font-semibold">
-                          {formatPrice(Number(job.budget), job.currency)}
+                          {formatPrice(job.budget, job.currency)}
                         </span>
                       </div>
                       <h3 className="group-hover:text-primary mb-1 line-clamp-2 font-semibold">
@@ -263,8 +324,8 @@ export default function HomePage() {
       <section className="bg-muted/30 py-16 md:py-24">
         <div className="container-custom">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold">{t('homepage.whyChoose')}</h2>
-            <p className="text-muted-foreground">{t('homepage.whyChooseDesc')}</p>
+            <h2 className="mb-4 text-3xl font-bold">{tr('homepage.whyChoose')}</h2>
+            <p className="text-muted-foreground">{tr('homepage.whyChooseDesc')}</p>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -285,12 +346,12 @@ export default function HomePage() {
       <section className="py-16 md:py-24">
         <div className="container-custom">
           <div className="from-primary to-primary/80 rounded-3xl bg-gradient-to-r p-8 text-center text-white md:p-16">
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">{t('homepage.readyToStart')}</h2>
-            <p className="mb-8 text-lg opacity-90">{t('homepage.readyToStartDesc')}</p>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">{tr('homepage.readyToStart')}</h2>
+            <p className="mb-8 text-lg opacity-90">{tr('homepage.readyToStartDesc')}</p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Link href="/jobs">
                 <Button size="xl" variant="secondary">
-                  {t('homepage.browseServices')}
+                  {tr('homepage.browseServices')}
                 </Button>
               </Link>
               <Link href="/register">
@@ -299,7 +360,7 @@ export default function HomePage() {
                   variant="outline"
                   className="border-white text-white hover:bg-white/10"
                 >
-                  {t('homepage.becomeProvider')}
+                  {tr('homepage.becomeProvider')}
                 </Button>
               </Link>
             </div>

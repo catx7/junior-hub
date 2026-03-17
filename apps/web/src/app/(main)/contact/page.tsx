@@ -7,8 +7,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 
 export default function ContactPage() {
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -21,7 +23,7 @@ export default function ContactPage() {
     e.preventDefault();
 
     if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      toast.error('Please fill in all fields');
+      toast.error(t('errors.fillAllFields'));
       return;
     }
 
@@ -39,11 +41,11 @@ export default function ContactPage() {
       }
 
       const result = await response.json();
-      toast.success(result.message || "Message sent! We'll get back to you soon.");
+      toast.success(result.message || t('success.messageSent'));
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
       console.error('Contact form error:', error);
-      toast.error('Failed to send message. Please try again.');
+      toast.error(t('errors.failedToSend'));
     } finally {
       setIsSubmitting(false);
     }

@@ -34,6 +34,18 @@ const config: Config = {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        success: {
+          DEFAULT: 'hsl(var(--success))',
+          foreground: 'hsl(var(--success-foreground))',
+        },
+        warning: {
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
+        info: {
+          DEFAULT: 'hsl(var(--info))',
+          foreground: 'hsl(var(--info-foreground))',
+        },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',
@@ -50,31 +62,6 @@ const config: Config = {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
-        // Custom colors (Airbnb-inspired)
-        coral: {
-          50: '#FFF5F5',
-          100: '#FFE5E6',
-          200: '#FFB8BA',
-          300: '#FF8589',
-          400: '#FF6B6F',
-          500: '#FF5A5F',
-          600: '#E04850',
-          700: '#C13515',
-          800: '#9B2C12',
-          900: '#7A220E',
-        },
-        teal: {
-          50: '#E6FFF9',
-          100: '#B3FFF0',
-          200: '#80FFE6',
-          300: '#4DFFDC',
-          400: '#1AFFD2',
-          500: '#00A699',
-          600: '#008F84',
-          700: '#00786E',
-          800: '#006159',
-          900: '#004A43',
-        },
       },
       borderRadius: {
         lg: 'var(--radius)',
@@ -83,6 +70,19 @@ const config: Config = {
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        display: ['var(--font-nunito)', 'var(--font-inter)', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        'display-lg': [
+          '3.75rem',
+          { lineHeight: '1.1', letterSpacing: '-0.02em', fontWeight: '700' },
+        ],
+        'display-sm': [
+          '2.25rem',
+          { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '700' },
+        ],
+        heading: ['1.5rem', { lineHeight: '1.3', letterSpacing: '-0.01em', fontWeight: '700' }],
+        subheading: ['1.125rem', { lineHeight: '1.4', fontWeight: '600' }],
       },
       keyframes: {
         'accordion-down': {
@@ -125,6 +125,22 @@ const config: Config = {
           '0%, 100%': { opacity: '1' },
           '50%': { opacity: '0.5' },
         },
+        'overlay-show': {
+          from: { opacity: '0' },
+          to: { opacity: '1' },
+        },
+        'content-show': {
+          from: { opacity: '0', transform: 'translate(-50%, -48%) scale(0.96)' },
+          to: { opacity: '1', transform: 'translate(-50%, -50%) scale(1)' },
+        },
+        'slide-up': {
+          from: { transform: 'translateY(100%)' },
+          to: { transform: 'translateY(0)' },
+        },
+        'slide-down': {
+          from: { transform: 'translateY(0)' },
+          to: { transform: 'translateY(100%)' },
+        },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -137,6 +153,10 @@ const config: Config = {
         'slide-in-from-right': 'slide-in-from-right 0.3s ease-out',
         shimmer: 'shimmer 2s linear infinite',
         pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'overlay-show': 'overlay-show 150ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'content-show': 'content-show 150ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'slide-up': 'slide-up 0.3s ease-out',
+        'slide-down': 'slide-down 0.2s ease-in',
       },
     },
   },

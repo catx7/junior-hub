@@ -46,14 +46,22 @@ export async function POST(request: NextRequest) {
       return validationErrorResponse(validationResult.error.errors);
     }
 
-    const { motivation, documentUrl } = validationResult.data;
+    const { motivation, documentUrl, backgroundCheckUrl, backgroundCheckDeclaration } =
+      validationResult.data;
+
+    const documents: Record<string, string | boolean> = {};
+    if (documentUrl) documents.idCard = documentUrl;
+    if (backgroundCheckUrl) documents.backgroundCheck = backgroundCheckUrl;
+    if (backgroundCheckDeclaration !== undefined) {
+      documents.backgroundCheckDeclaration = backgroundCheckDeclaration;
+    }
 
     const verificationRequest = await prisma.verificationRequest.create({
       data: {
         userId: authUser.id,
         status: 'PENDING',
         motivation,
-        documents: documentUrl ? { idCard: documentUrl } : {},
+        documents,
       },
     });
 

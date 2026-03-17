@@ -193,7 +193,8 @@ export function useAuth() {
       name: string,
       email: string,
       password: string,
-      verifyCaptcha?: (action: string) => Promise<void>
+      verifyCaptcha?: (action: string) => Promise<void>,
+      consent?: { consentTerms?: boolean; consentAge?: boolean; consentMarketing?: boolean }
     ) => {
       try {
         setLoading(true);
@@ -209,7 +210,7 @@ export function useAuth() {
         // Register in database with Firebase token
         // 409 is OK — the onAuthChange listener may have already created the user
         try {
-          await authApi.register({ name, email, password });
+          await authApi.register({ name, email, password, ...consent });
         } catch (err: any) {
           if (err?.status !== 409) throw err;
         }
@@ -218,7 +219,7 @@ export function useAuth() {
         const userData = await authApi.me();
         setUser(userData);
         toast.success('Account created successfully!');
-        router.push('/');
+        router.push('/onboarding');
       } catch (error) {
         console.error('Registration error:', error);
         const message = getAuthErrorMessage(error);

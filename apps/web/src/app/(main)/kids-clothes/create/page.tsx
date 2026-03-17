@@ -21,6 +21,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LocationPicker } from '@/components/ui/location-picker';
 import { useAuth } from '@/hooks/use-auth';
+import { useTranslation } from '@/hooks/use-translation';
 import { getIdToken } from '@/lib/firebase';
 import { toast } from 'sonner';
 
@@ -79,6 +80,7 @@ interface ImageItem {
 export default function CreateKidsClothesPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [listingType, setListingType] = useState<'Sell' | 'Donate'>('Sell');
@@ -115,7 +117,7 @@ export default function CreateKidsClothesPage() {
 
     const remaining = 5 - images.length;
     if (remaining <= 0) {
-      toast.error('Maximum 5 images allowed');
+      toast.error(t('errors.maxImagesExceeded', { count: 5 }));
       return;
     }
 
@@ -125,11 +127,11 @@ export default function CreateKidsClothesPage() {
     const newImages: ImageItem[] = [];
     for (const file of newFiles) {
       if (!validTypes.includes(file.type)) {
-        toast.error(`${file.name}: Only JPEG, PNG, WebP, and GIF are allowed`);
+        toast.error(`${file.name}: ${t('errors.invalidFileType')}`);
         continue;
       }
       if (file.size > 5 * 1024 * 1024) {
-        toast.error(`${file.name}: File too large (max 5MB)`);
+        toast.error(`${file.name}: ${t('errors.fileTooLarge')}`);
         continue;
       }
       newImages.push({
@@ -152,12 +154,12 @@ export default function CreateKidsClothesPage() {
     try {
       new URL(imageUrl);
     } catch {
-      toast.error('Please enter a valid URL');
+      toast.error(t('errors.invalidUrl'));
       return;
     }
 
     if (images.length >= 5) {
-      toast.error('Maximum 5 images allowed');
+      toast.error(t('errors.maxImagesExceeded', { count: 5 }));
       return;
     }
 
@@ -179,7 +181,7 @@ export default function CreateKidsClothesPage() {
     e.preventDefault();
 
     if (!isAuthenticated) {
-      toast.error('Please log in to create a listing');
+      toast.error(t('errors.loginRequired'));
       router.push('/login');
       return;
     }
@@ -189,7 +191,7 @@ export default function CreateKidsClothesPage() {
     try {
       const token = await getIdToken();
       if (!token) {
-        toast.error('Please log in to create a listing');
+        toast.error(t('errors.loginRequired'));
         router.push('/login');
         return;
       }
@@ -245,11 +247,11 @@ export default function CreateKidsClothesPage() {
       }
 
       const item = await response.json();
-      toast.success('Listing created successfully!');
+      toast.success(t('success.listingCreated'));
       router.push(`/kids-clothes/${item.id}`);
     } catch (error: any) {
       console.error('Create listing error:', error);
-      toast.error(error.message || 'Failed to create listing');
+      toast.error(error.message || t('errors.failedToCreate'));
     } finally {
       setIsLoading(false);
       setIsUploading(false);

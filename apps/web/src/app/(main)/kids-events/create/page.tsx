@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LocationPicker } from '@/components/ui/location-picker';
 import { useAuth } from '@/hooks/use-auth';
+import { useTranslation } from '@/hooks/use-translation';
 import { getIdToken } from '@/lib/firebase';
 import { toast } from 'sonner';
 
@@ -29,6 +30,7 @@ const categories = [
 export default function CreateKidsEventPage() {
   const router = useRouter();
   const { user, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -66,13 +68,13 @@ export default function CreateKidsEventPage() {
     e.preventDefault();
 
     if (!isAuthenticated) {
-      toast.error('Please log in to create an event');
+      toast.error(t('errors.loginRequired'));
       router.push('/login');
       return;
     }
 
     if (formData.ageRangeMin > formData.ageRangeMax) {
-      toast.error('Minimum age cannot be greater than maximum age');
+      toast.error(t('errors.minAgeGreaterThanMax'));
       return;
     }
 
@@ -81,7 +83,7 @@ export default function CreateKidsEventPage() {
     try {
       const token = await getIdToken();
       if (!token) {
-        toast.error('Please log in to create an event');
+        toast.error(t('errors.loginRequired'));
         router.push('/login');
         return;
       }
@@ -109,11 +111,11 @@ export default function CreateKidsEventPage() {
       }
 
       const event = await response.json();
-      toast.success('Event created successfully!');
+      toast.success(t('success.eventCreated'));
       router.push(`/kids-events/${event.id}`);
     } catch (error: any) {
       console.error('Create event error:', error);
-      toast.error(error.message || 'Failed to create event');
+      toast.error(error.message || t('errors.failedToCreate'));
     } finally {
       setIsLoading(false);
     }

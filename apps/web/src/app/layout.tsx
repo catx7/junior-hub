@@ -1,11 +1,18 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Nunito } from 'next/font/google';
 import { Providers } from '@/providers';
+import { OrganizationJsonLd } from '@/components/json-ld';
 import './globals.css';
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+});
+
+const nunito = Nunito({
+  subsets: ['latin'],
+  variable: '--font-nunito',
+  weight: ['400', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -15,13 +22,29 @@ export const metadata: Metadata = {
   },
   description:
     'Connect with trusted local service providers for babysitting, house cleaning, local food, and more. Post jobs or offer your services.',
-  keywords: ['local services', 'babysitter', 'house cleaning', 'local food', 'service marketplace'],
+  keywords: [
+    'bona',
+    'babysitter',
+    'bone bucuresti',
+    'curatenie',
+    'servicii locale',
+    'ingrijire copii',
+    'evenimente copii',
+    'haine copii',
+  ],
+  alternates: {
+    canonical: 'https://juniorhub.ro',
+    languages: {
+      'ro-RO': 'https://juniorhub.ro',
+      'en-US': 'https://juniorhub.ro',
+    },
+  },
   authors: [{ name: 'JuniorHub' }],
   creator: 'JuniorHub',
   openGraph: {
     type: 'website',
-    locale: 'en_US',
-    url: 'https://juniorhub.com',
+    locale: 'ro_RO',
+    url: 'https://juniorhub.ro',
     siteName: 'JuniorHub',
     title: 'JuniorHub - Find Local Service Providers',
     description:
@@ -53,7 +76,6 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#ffffff' },
     { media: '(prefers-color-scheme: dark)', color: '#0a0a0a' },
@@ -62,7 +84,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ro" suppressHydrationWarning>
       <head>
         <link
           rel="stylesheet"
@@ -71,7 +93,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           crossOrigin=""
         />
       </head>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.variable} ${nunito.variable} font-sans antialiased`}>
+        <OrganizationJsonLd />
         <Providers>{children}</Providers>
       </body>
     </html>

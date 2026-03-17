@@ -11,6 +11,7 @@ import {
 import { sendPushNotification } from '@/lib/firebase-admin';
 import { moderateContent } from '@/lib/content-moderation';
 import { withLogging } from '@/lib/api-handler';
+import { sendNewMessageEmail } from '@/lib/email';
 
 // Extended schema with validated imageUrl (must be Cloudinary URL if provided)
 const messageWithImageSchema = sendMessageSchema.extend({
@@ -182,10 +183,10 @@ export const POST = withLogging(
         },
       });
 
-      // Send FCM push notification
+      // Send FCM push notification + email
       const recipient = await prisma.user.findUnique({
         where: { id: otherParticipant.userId },
-        select: { fcmToken: true },
+        select: { fcmToken: true, email: true, name: true },
       });
 
       if (recipient?.fcmToken) {
@@ -205,6 +206,17 @@ export const POST = withLogging(
             data: { fcmToken: null },
           });
         }
+      }
+
+      // Send email notification if no push token (non-blocking)
+      if (!recipient?.fcmToken && recipient?.email) {
+        sendNewMessageEmail(
+          recipient.email,
+          recipient.name,
+          authUser.name,
+          content,
+          params.id
+        ).catch(() => {});
       }
     }
 

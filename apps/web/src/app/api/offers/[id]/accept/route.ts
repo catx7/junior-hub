@@ -7,6 +7,7 @@ import {
   notFoundResponse,
 } from '@/lib/auth-middleware';
 import { withLogging } from '@/lib/api-handler';
+import { sendOfferAcceptedEmail, sendOfferRejectedEmail } from '@/lib/email';
 
 export const PATCH = withLogging(
   async (request: NextRequest, { params }: { params: Record<string, string> }) => {
@@ -30,6 +31,7 @@ export const PATCH = withLogging(
           select: {
             id: true,
             name: true,
+            email: true,
           },
         },
       },
@@ -178,6 +180,29 @@ export const PATCH = withLogging(
 
         return { offer: acceptedOffer, job: updatedJob, conversation };
       });
+
+      // Send email to accepted provider (non-blocking)
+      sendOfferAcceptedEmail(
+        offer.provider.email,
+        offer.provider.name,
+        offer.job.title,
+        offer.job.id
+      ).catch(() => {});
+
+      // Send rejection emails to other providers (non-blocking)
+      prisma.offer
+        .findMany({
+          where: { jobId: offer.job.id, id: { not: params.id }, isRejected: true },
+          select: { provider: { select: { email: true, name: true } } },
+        })
+        .then((rejected) => {
+          rejected.forEach((o) => {
+            sendOfferRejectedEmail(o.provider.email, o.provider.name, offer.job.title).catch(
+              () => {}
+            );
+          });
+        })
+        .catch(() => {});
 
       return NextResponse.json({
         offer: {

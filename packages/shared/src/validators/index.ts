@@ -215,6 +215,26 @@ export const imageUploadSchema = z.object({
   allowedTypes: z.array(z.string()).default(['image/jpeg', 'image/png', 'image/webp']),
 });
 
+// Provider Search Validators
+export const providerFiltersSchema = z.object({
+  category: serviceCategorySchema.optional(),
+  search: z.string().max(100).optional(),
+  lat: z.coerce.number().min(-90).max(90).optional(),
+  lng: z.coerce.number().min(-180).max(180).optional(),
+  radius: z.coerce.number().positive().max(500).optional(),
+  minRate: z.coerce.number().positive().optional(),
+  maxRate: z.coerce.number().positive().optional(),
+  minRating: z.coerce.number().min(0).max(5).optional(),
+  minExperience: z.coerce.number().int().min(0).optional(),
+  languages: z.string().optional(), // comma-separated: "ro,en,hu"
+  certifications: z.string().optional(), // comma-separated: "first_aid,cpr"
+  specialNeeds: z.coerce.boolean().optional(),
+  sort: z.enum(['rating', 'experience', 'rate', 'distance', 'lastActive']).optional(),
+  order: z.enum(['asc', 'desc']).optional(),
+  page: z.coerce.number().int().positive().optional().default(1),
+  limit: z.coerce.number().int().positive().max(100).optional().default(20),
+});
+
 // Pagination Validators
 export const paginationSchema = z.object({
   page: z.coerce.number().int().positive().optional().default(1),
@@ -229,6 +249,17 @@ export const createVerificationRequestSchema = z.object({
     .max(2000, 'Motivation must be at most 2000 characters')
     .trim(),
   documentUrl: z.string().url('Invalid document URL').optional(),
+  backgroundCheckUrl: z
+    .string()
+    .url('Invalid background check document URL')
+    .optional()
+    .describe(
+      'Certificat de cazier judiciar (max 6 months old) - required for childcare services per Legea 272/2004'
+    ),
+  backgroundCheckDeclaration: z
+    .boolean()
+    .optional()
+    .describe('User declares they are not listed on the sex offender registry per Legea 118/2019'),
 });
 
 export const updateVerificationStatusSchema = z.object({
@@ -256,3 +287,4 @@ export type UpdateVerificationStatusInput = z.infer<typeof updateVerificationSta
 export type CreateBookingRequestInput = z.infer<typeof createBookingRequestSchema>;
 export type CreateLocalFoodInput = z.infer<typeof createLocalFoodSchema>;
 export type CreateFoodOrderInput = z.infer<typeof createFoodOrderSchema>;
+export type ProviderFiltersInput = z.infer<typeof providerFiltersSchema>;

@@ -5,7 +5,22 @@ import Link from 'next/link';
 import { SafeImage } from '@/components/ui/safe-image';
 import { useSearchParams } from 'next/navigation';
 import { Search, MapPin, Filter, SlidersHorizontal, Grid, List, X } from 'lucide-react';
-import { Button, Card, CardContent, Badge, Input, UserAvatar, Skeleton } from '@/components/ui';
+import { CategoryIcon } from '@/components/ui/category-icon';
+import {
+  Button,
+  Card,
+  CardContent,
+  Badge,
+  Input,
+  UserAvatar,
+  Skeleton,
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerClose,
+  Breadcrumb,
+} from '@/components/ui';
 import { useTranslation } from '@/hooks/use-translation';
 import { useAuth } from '@/hooks/use-auth';
 import { useJobs } from '@/hooks/use-jobs';
@@ -56,8 +71,7 @@ function JobsPageContent() {
     order: sortBy === 'budget' ? 'desc' : 'desc',
   } as any);
 
-  const allJobs = data?.data || [];
-  const jobs = isAuthenticated ? allJobs : allJobs.slice(0, 10);
+  const jobs = data?.data || [];
   const categories = Object.values(JOB_CATEGORIES);
 
   const clearFilters = () => {
@@ -75,6 +89,10 @@ function JobsPageContent() {
       {/* Header */}
       <div className="bg-background border-b">
         <div className="container-custom py-8">
+          <Breadcrumb
+            items={[{ label: 'Acasă', href: '/' }, { label: 'Anunțuri' }]}
+            className="mb-4"
+          />
           <h1 className="mb-2 text-3xl font-bold">{t('jobs.title')}</h1>
           <p className="text-muted-foreground">{t('jobs.browseSubtitle')}</p>
         </div>
@@ -121,8 +139,8 @@ function JobsPageContent() {
                         category === cat.id && 'bg-muted font-medium'
                       )}
                     >
-                      <span className="mr-2 text-lg">{cat.icon}</span>
-                      <span className="text-xs">{t(cat.labelKey)}</span>
+                      <CategoryIcon name={cat.icon} className="mr-2 h-5 w-5" />
+                      <span className="text-sm">{t(cat.labelKey)}</span>
                     </button>
                   ))}
                 </div>
@@ -275,10 +293,13 @@ function JobsPageContent() {
               </div>
             </div>
 
-            {/* Mobile Filters */}
-            {showFilters && (
-              <Card className="mb-6 p-4 lg:hidden">
-                <div className="space-y-4">
+            {/* Mobile Filters Drawer */}
+            <Drawer open={showFilters} onOpenChange={setShowFilters}>
+              <DrawerContent side="bottom" className="max-h-[85vh]">
+                <DrawerHeader>
+                  <DrawerTitle>{t('jobs.filters')}</DrawerTitle>
+                </DrawerHeader>
+                <div className="space-y-6 overflow-y-auto p-4">
                   {/* Search */}
                   <div className="relative">
                     <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
@@ -291,44 +312,97 @@ function JobsPageContent() {
                   </div>
 
                   {/* Categories */}
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      size="sm"
-                      variant={!category ? 'default' : 'outline'}
-                      onClick={() => setCategory('')}
-                    >
-                      {t('categories.all')}
-                    </Button>
-                    {categories.map((cat) => (
+                  <div>
+                    <h3 className="mb-3 font-semibold">{t('jobs.category')}</h3>
+                    <div className="flex flex-wrap gap-2">
                       <Button
-                        key={cat.id}
                         size="sm"
-                        variant={category === cat.id ? 'default' : 'outline'}
-                        onClick={() => setCategory(cat.id as ServiceCategory)}
+                        variant={!category ? 'default' : 'outline'}
+                        onClick={() => setCategory('')}
                       >
-                        <span className="mr-1">{cat.icon}</span>
-                        <span className="text-xs">{t(cat.labelKey)}</span>
+                        {t('categories.all')}
                       </Button>
-                    ))}
+                      {categories.map((cat) => (
+                        <Button
+                          key={cat.id}
+                          size="sm"
+                          variant={category === cat.id ? 'default' : 'outline'}
+                          onClick={() => setCategory(cat.id as ServiceCategory)}
+                        >
+                          <CategoryIcon name={cat.icon} className="mr-1 h-4 w-4" />
+                          <span className="text-sm">{t(cat.labelKey)}</span>
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Job Type */}
+                  <div>
+                    <h3 className="mb-3 font-semibold">{t('jobs.type')}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant={!jobType ? 'default' : 'outline'}
+                        onClick={() => setJobType('')}
+                      >
+                        {t('jobs.allTypes')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={jobType === 'SERVICE_REQUEST' ? 'default' : 'outline'}
+                        onClick={() => setJobType('SERVICE_REQUEST')}
+                      >
+                        {t('jobs.serviceRequests')}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={jobType === 'SERVICE_OFFERING' ? 'default' : 'outline'}
+                        onClick={() => setJobType('SERVICE_OFFERING')}
+                      >
+                        {t('jobs.serviceOfferings')}
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Budget */}
+                  <div>
+                    <h3 className="mb-3 font-semibold">{t('jobs.budget')}</h3>
+                    <div className="flex gap-2">
+                      <Input
+                        type="number"
+                        placeholder={t('jobs.minBudget')}
+                        value={minBudget}
+                        onChange={(e) => setMinBudget(e.target.value)}
+                      />
+                      <Input
+                        type="number"
+                        placeholder={t('jobs.maxBudget')}
+                        value={maxBudget}
+                        onChange={(e) => setMaxBudget(e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Actions */}
                   <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder={t('jobs.minBudget')}
-                      value={minBudget}
-                      onChange={(e) => setMinBudget(e.target.value)}
-                    />
-                    <Input
-                      type="number"
-                      placeholder={t('jobs.maxBudget')}
-                      value={maxBudget}
-                      onChange={(e) => setMaxBudget(e.target.value)}
-                    />
+                    {hasFilters && (
+                      <Button variant="outline" onClick={clearFilters} className="flex-1">
+                        {t('jobs.clearFilters')}
+                      </Button>
+                    )}
+                    <DrawerClose asChild>
+                      <Button className="flex-1">{t('common.apply')}</Button>
+                    </DrawerClose>
                   </div>
                 </div>
-              </Card>
+              </DrawerContent>
+            </Drawer>
+
+            {/* Result Count */}
+            {!isLoading && (
+              <p className="text-muted-foreground mb-4 text-sm">
+                {jobs.length > 0 ? `${jobs.length} ${t('jobs.title').toLowerCase()}` : null}
+              </p>
             )}
 
             {/* Results */}
@@ -336,7 +410,7 @@ function JobsPageContent() {
               <div
                 className={cn(
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3'
+                    ? 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
                     : 'space-y-4'
                 )}
               >
@@ -365,19 +439,12 @@ function JobsPageContent() {
               <div
                 className={cn(
                   viewMode === 'grid'
-                    ? 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3'
+                    ? 'grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'
                     : 'space-y-4'
                 )}
               >
                 {jobs.map((job: any) => (
-                  <Link
-                    key={job.id}
-                    href={
-                      isAuthenticated
-                        ? `/jobs/${job.id}`
-                        : '/register?message=Create an account to view job details and make offers'
-                    }
-                  >
+                  <Link key={job.id} href={`/jobs/${job.id}`}>
                     <Card
                       className={cn(
                         'group overflow-hidden transition-all hover:shadow-lg',
@@ -440,13 +507,14 @@ function JobsPageContent() {
                                   ]?.color,
                               }}
                             >
-                              <span className="mr-1">
-                                {
+                              <CategoryIcon
+                                name={
                                   SERVICE_CATEGORIES[
                                     job.category as keyof typeof SERVICE_CATEGORIES
                                   ]?.icon
                                 }
-                              </span>
+                                className="mr-1 h-3 w-3"
+                              />
                               <span className="text-xs">
                                 {t(
                                   SERVICE_CATEGORIES[
@@ -501,17 +569,17 @@ function JobsPageContent() {
 
             {/* Sign up prompt for guests */}
             {!isAuthenticated && jobs.length > 0 && (
-              <div className="mt-8 rounded-xl border bg-gradient-to-r from-blue-50 to-indigo-50 p-8 text-center">
+              <div className="bg-primary/5 dark:bg-primary/10 mt-8 rounded-xl border p-8 text-center">
                 <h3 className="mb-2 text-lg font-semibold">{t('jobs.wantToSeeMore')}</h3>
                 <p className="text-muted-foreground mb-4">{t('jobs.signUpBrowseDesc')}</p>
-                <Link href="/register?message=Create an account to browse all jobs and make offers">
+                <Link href="/register">
                   <Button>{t('jobs.signUpFree')}</Button>
                 </Link>
               </div>
             )}
 
             {/* Pagination placeholder */}
-            {isAuthenticated && jobs.length > 0 && (
+            {jobs.length > 0 && (
               <div className="mt-8 flex justify-center">
                 <Button variant="outline">{t('jobs.loadMore')}</Button>
               </div>

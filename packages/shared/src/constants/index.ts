@@ -8,7 +8,7 @@ export const SERVICE_CATEGORIES = {
     id: 'BABYSITTING',
     label: 'Babysitting',
     labelKey: 'categories.babysitting',
-    icon: '👶',
+    icon: 'Baby',
     color: '#FF6B6B',
     commissionRate: 0.1,
   },
@@ -16,7 +16,7 @@ export const SERVICE_CATEGORIES = {
     id: 'HOUSE_CLEANING',
     label: 'House Cleaning',
     labelKey: 'categories.houseCleaning',
-    icon: '🏠',
+    icon: 'Home',
     color: '#4ECDC4',
     commissionRate: 0.12,
   },
@@ -24,7 +24,7 @@ export const SERVICE_CATEGORIES = {
     id: 'LOCAL_FOOD',
     label: 'Local Food',
     labelKey: 'categories.localFood',
-    icon: '🍽️',
+    icon: 'UtensilsCrossed',
     color: '#FFE66D',
     commissionRate: 0.15,
   },
@@ -32,7 +32,7 @@ export const SERVICE_CATEGORIES = {
     id: 'OTHER',
     label: 'Other',
     labelKey: 'categories.other',
-    icon: '⋯',
+    icon: 'MoreHorizontal',
     color: '#95A5A6',
     commissionRate: 0.1,
   },
@@ -124,7 +124,7 @@ export const LOCALES = {
   ro: { code: 'ro', name: 'Romanian', nativeName: 'Română', flag: '🇷🇴' },
 } as const;
 
-export const DEFAULT_LOCALE = 'en';
+export const DEFAULT_LOCALE = 'ro';
 export const SUPPORTED_LOCALES = Object.keys(LOCALES) as (keyof typeof LOCALES)[];
 
 // Pagination
@@ -148,8 +148,8 @@ export const MAP = {
   DEFAULT_RADIUS: 25, // km
   MAX_RADIUS: 500, // km
   DEFAULT_CENTER: {
-    lat: 40.7128, // New York
-    lng: -74.006,
+    lat: 44.4268, // Bucharest, Romania
+    lng: 26.1025,
   },
 } as const;
 

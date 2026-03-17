@@ -6,10 +6,12 @@ import Image from 'next/image';
 import { Calendar, MapPin, Users, Clock, Plus, Search, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/hooks/use-auth';
+import { useTranslation } from '@/hooks/use-translation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Breadcrumb } from '@/components/ui';
 
 const categories = [
   'All',
@@ -48,8 +50,19 @@ interface KidsEvent {
 
 export default function KidsEventsPage() {
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+
+  const categoryKeys: Record<string, string> = {
+    All: 'kidsEvents.categoryAll',
+    'Art & Crafts': 'kidsEvents.categoryArt',
+    Sports: 'kidsEvents.categorySports',
+    Education: 'kidsEvents.categoryEducation',
+    'Performing Arts': 'kidsEvents.categoryPerforming',
+    Technology: 'kidsEvents.categoryTech',
+    'Outdoor Adventures': 'kidsEvents.categoryOutdoor',
+  };
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['kids-events', selectedCategory, searchQuery],
@@ -70,19 +83,22 @@ export default function KidsEventsPage() {
   return (
     <div className="bg-muted/50 min-h-screen py-8">
       <div className="mx-auto max-w-7xl px-4">
+        <Breadcrumb
+          items={[{ label: 'Acasă', href: '/' }, { label: 'Evenimente pentru copii' }]}
+          className="mb-6"
+        />
+
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-foreground text-3xl font-bold">Kids Events</h1>
-            <p className="text-muted-foreground mt-1">
-              Discover fun and educational events for children in your area
-            </p>
+            <h1 className="text-foreground text-3xl font-bold">{t('kidsEvents.pageTitle')}</h1>
+            <p className="text-muted-foreground mt-1">{t('kidsEvents.pageSubtitle')}</p>
           </div>
           {isAuthenticated && (
             <Link href="/kids-events/create">
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
-                Create Event
+                {t('kidsEvents.createEvent')}
               </Button>
             </Link>
           )}
@@ -96,7 +112,7 @@ export default function KidsEventsPage() {
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search events..."
+                placeholder={t('kidsEvents.searchPlaceholder')}
                 className="pl-10"
               />
             </div>
@@ -109,7 +125,7 @@ export default function KidsEventsPage() {
                   onClick={() => setSelectedCategory(category)}
                   className="flex-shrink-0"
                 >
-                  {category}
+                  {t(categoryKeys[category] || category)}
                 </Button>
               ))}
             </div>
@@ -126,7 +142,7 @@ export default function KidsEventsPage() {
         {/* Error State */}
         {error && (
           <Card className="p-12 text-center">
-            <p className="text-red-500">Failed to load events. Please try again.</p>
+            <p className="text-red-500">{t('kidsEvents.failedToLoad')}</p>
           </Card>
         )}
 
@@ -148,7 +164,7 @@ export default function KidsEventsPage() {
                   href={
                     isAuthenticated
                       ? `/kids-events/${event.id}`
-                      : '/register?message=Create an account to view event details and register your child'
+                      : '/register?message=Creează un cont pentru a vedea detalii și a-ți înscrie copilul'
                   }
                 >
                   <Card className="overflow-hidden transition hover:shadow-lg">
@@ -165,7 +181,7 @@ export default function KidsEventsPage() {
                       </div>
                       {price === 0 && (
                         <div className="absolute left-2 top-2">
-                          <Badge className="bg-green-600">FREE</Badge>
+                          <Badge className="bg-green-600">{t('kidsEvents.free')}</Badge>
                         </div>
                       )}
                     </div>
@@ -180,7 +196,7 @@ export default function KidsEventsPage() {
                         <div className="flex items-center gap-2">
                           <Calendar className="h-4 w-4" />
                           <span>
-                            {new Date(event.date).toLocaleDateString('en-US', {
+                            {new Date(event.date).toLocaleDateString('ro-RO', {
                               weekday: 'short',
                               month: 'short',
                               day: 'numeric',
@@ -198,7 +214,8 @@ export default function KidsEventsPage() {
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4" />
                           <span>
-                            Ages {event.ageRangeMin}-{event.ageRangeMax} years
+                            {t('kidsEvents.ages')} {event.ageRangeMin}-{event.ageRangeMax}{' '}
+                            {t('kidsEvents.years')}
                           </span>
                         </div>
                       </div>
@@ -207,12 +224,12 @@ export default function KidsEventsPage() {
                         <div className="mb-2 flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">
                             {event._count?.registrations || event.currentParticipants}/
-                            {event.maxParticipants} participants
+                            {event.maxParticipants} {t('kidsEvents.participants')}
                           </span>
                           <span
                             className={`font-medium ${spotsLeft <= 5 ? 'text-red-600' : 'text-foreground'}`}
                           >
-                            {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left
+                            {spotsLeft} {t('kidsEvents.spotsLeft')}
                           </span>
                         </div>
                         <div className="bg-muted h-2 w-full overflow-hidden rounded-full">
@@ -231,9 +248,9 @@ export default function KidsEventsPage() {
 
                       <div className="mt-4 flex items-center justify-between">
                         <span className="text-primary text-2xl font-bold">
-                          {price === 0 ? 'FREE' : `$${price}`}
+                          {price === 0 ? t('kidsEvents.free') : `${price} RON`}
                         </span>
-                        <Button size="sm">View Details</Button>
+                        <Button size="sm">{t('kidsEvents.viewDetails')}</Button>
                       </div>
                     </div>
                   </Card>
@@ -246,12 +263,10 @@ export default function KidsEventsPage() {
         {/* Sign up prompt for guests */}
         {!isAuthenticated && events.length > 0 && (
           <div className="mt-8 rounded-xl border bg-gradient-to-r from-purple-50 to-pink-50 p-8 text-center">
-            <h3 className="mb-2 text-lg font-semibold">Want to see more events?</h3>
-            <p className="text-muted-foreground mb-4 text-sm">
-              Create a free account to browse all events and register your children.
-            </p>
-            <Link href="/register?message=Create an account to browse all events and register your child">
-              <Button>Sign Up Free</Button>
+            <h3 className="mb-2 text-lg font-semibold">{t('kidsEvents.wantToSeeMore')}</h3>
+            <p className="text-muted-foreground mb-4 text-sm">{t('kidsEvents.signUpDesc')}</p>
+            <Link href="/register?message=Creează un cont pentru a naviga evenimentele și a-ți înscrie copilul">
+              <Button>{t('kidsEvents.signUpFree')}</Button>
             </Link>
           </div>
         )}
@@ -260,17 +275,19 @@ export default function KidsEventsPage() {
         {!isLoading && !error && events.length === 0 && (
           <Card className="p-12 text-center">
             <Calendar className="text-muted-foreground/50 mx-auto mb-4 h-16 w-16" />
-            <h3 className="text-foreground mb-2 text-lg font-semibold">No events found</h3>
+            <h3 className="text-foreground mb-2 text-lg font-semibold">
+              {t('kidsEvents.noEventsFound')}
+            </h3>
             <p className="text-muted-foreground mb-6">
               {searchQuery || selectedCategory !== 'All'
-                ? 'Try adjusting your search or filters'
-                : 'Be the first to create an event for kids in your area!'}
+                ? t('kidsEvents.noEventsAdjust')
+                : t('kidsEvents.noEventsFirst')}
             </p>
             {isAuthenticated && (
               <Link href="/kids-events/create">
                 <Button>
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Event
+                  {t('kidsEvents.createEvent')}
                 </Button>
               </Link>
             )}
@@ -282,15 +299,15 @@ export default function KidsEventsPage() {
           <Card className="mt-8 bg-gradient-to-r from-purple-50 to-pink-50 p-6">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div>
-                <h3 className="text-foreground mb-2 font-semibold">Want to organize an event?</h3>
-                <p className="text-muted-foreground text-sm">
-                  Share your passion and create memorable experiences for children in your community
-                </p>
+                <h3 className="text-foreground mb-2 font-semibold">
+                  {t('kidsEvents.organizeEvent')}
+                </h3>
+                <p className="text-muted-foreground text-sm">{t('kidsEvents.organizeEventDesc')}</p>
               </div>
               <Link href="/kids-events/create">
                 <Button variant="default" className="bg-purple-600 hover:bg-purple-700">
                   <Plus className="mr-2 h-4 w-4" />
-                  Create Event
+                  {t('kidsEvents.createEvent')}
                 </Button>
               </Link>
             </div>

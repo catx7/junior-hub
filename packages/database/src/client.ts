@@ -12,9 +12,8 @@ export const prisma =
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   });
 
-if (process.env.NODE_ENV !== 'production') {
-  globalForPrisma.prisma = prisma;
-}
+// Always cache on globalThis to prevent connection exhaustion during SSG builds
+globalForPrisma.prisma = prisma;
 
 export { PrismaClient };
 export default prisma;

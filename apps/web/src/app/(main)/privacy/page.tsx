@@ -1,338 +1,427 @@
 import { Card } from '@/components/ui/card';
+import { Breadcrumb } from '@/components/ui';
+import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Politica de Confidențialitate | JuniorHub',
+  description:
+    'Politica de confidențialitate JuniorHub - cum colectăm, utilizăm și protejăm datele dumneavoastră conform GDPR.',
+};
 
 export default function PrivacyPolicyPage() {
   return (
     <div className="bg-muted/50 min-h-screen py-12">
       <div className="mx-auto max-w-4xl px-4">
-        <h1 className="text-foreground mb-8 text-4xl font-bold">Privacy Policy</h1>
+        <Breadcrumb
+          items={[{ label: 'Acasă', href: '/' }, { label: 'Politica de confidențialitate' }]}
+          className="mb-6"
+        />
+        <h1 className="text-foreground mb-8 text-4xl font-bold">Politica de Confidențialitate</h1>
 
         <Card className="prose prose-gray max-w-none p-8">
-          <p className="text-muted-foreground text-sm">
-            Last updated: {new Date().toLocaleDateString()}
-          </p>
-          <p className="text-muted-foreground text-sm">
-            Effective date: {new Date().toLocaleDateString()}
-          </p>
+          <p className="text-muted-foreground text-sm">Ultima actualizare: 15.03.2026</p>
+          <p className="text-muted-foreground text-sm">Data intrării în vigoare: 15.03.2026</p>
 
-          <h2>1. Introduction</h2>
+          <h2>1. Introducere</h2>
           <p>
-            JuniorHub ("we", "our", "us") is committed to protecting your privacy. This Privacy
-            Policy explains how we collect, use, disclose, and safeguard your information when you
-            use our platform.
-          </p>
-          <p>This policy complies with:</p>
-          <ul>
-            <li>EU General Data Protection Regulation (GDPR)</li>
-            <li>Romanian Law 190/2018 on data protection</li>
-            <li>Romanian Law 506/2004 on personal data processing</li>
-          </ul>
-
-          <h2>2. Information We Collect</h2>
-
-          <h3>2.1 Information You Provide</h3>
-          <ul>
-            <li>
-              <strong>Account Information:</strong> Name, email address, password, phone number
-            </li>
-            <li>
-              <strong>Profile Information:</strong> Avatar, bio, location, languages
-            </li>
-            <li>
-              <strong>Job Postings:</strong> Service descriptions, budgets, locations
-            </li>
-            <li>
-              <strong>Messages:</strong> Communications with other users
-            </li>
-            <li>
-              <strong>Payment Information:</strong> Processed by third-party providers
-            </li>
-            <li>
-              <strong>Verification Documents:</strong> Government ID, background checks (for
-              providers)
-            </li>
-          </ul>
-
-          <h3>2.2 Information Collected Automatically</h3>
-          <ul>
-            <li>
-              <strong>Usage Data:</strong> Pages visited, features used, time spent
-            </li>
-            <li>
-              <strong>Device Information:</strong> IP address, browser type, device type
-            </li>
-            <li>
-              <strong>Location Data:</strong> Approximate location for service matching
-            </li>
-            <li>
-              <strong>Cookies:</strong> Session cookies, preference cookies
-            </li>
-          </ul>
-
-          <h2>3. How We Use Your Information</h2>
-
-          <h3>Legal Basis for Processing (GDPR Article 6)</h3>
-          <p>We process your data based on:</p>
-          <ul>
-            <li>
-              <strong>Contract Performance:</strong> To provide services you requested
-            </li>
-            <li>
-              <strong>Consent:</strong> For marketing communications (opt-in)
-            </li>
-            <li>
-              <strong>Legitimate Interests:</strong> Platform improvement, fraud prevention
-            </li>
-            <li>
-              <strong>Legal Obligation:</strong> Compliance with Romanian law
-            </li>
-          </ul>
-
-          <h3>Specific Uses</h3>
-          <ul>
-            <li>Provide and maintain the Service</li>
-            <li>Process transactions and send confirmations</li>
-            <li>Send notifications about your account and activities</li>
-            <li>Respond to your requests and provide customer support</li>
-            <li>Detect, prevent, and address fraud and security issues</li>
-            <li>Improve and personalize the Service</li>
-            <li>Conduct provider verification and background checks</li>
-            <li>Comply with legal obligations</li>
-          </ul>
-
-          <h2>4. Data Sharing and Disclosure</h2>
-
-          <h3>4.1 With Other Users</h3>
-          <p>
-            Your profile information, job postings, and reviews are visible to other users. Direct
-            messages are only visible to conversation participants.
+            JuniorHub SRL (&quot;noi&quot;, &quot;al nostru&quot;, &quot;compania&quot;) se
+            angajează să protejeze confidențialitatea datelor dumneavoastră. Această Politică de
+            Confidențialitate explică modul în care colectăm, utilizăm, divulgăm și protejăm
+            informațiile dvs. atunci când utilizați platforma noastră.
           </p>
 
-          <h3>4.2 Service Providers</h3>
-          <p>We share data with trusted third parties:</p>
+          <h3>Operatorul de date</h3>
           <ul>
             <li>
-              <strong>Firebase (Google):</strong> Authentication, hosting
+              <strong>Denumire:</strong> JuniorHub SRL
             </li>
             <li>
-              <strong>Vercel:</strong> Website hosting
+              <strong>CUI:</strong> [CUI]
             </li>
             <li>
-              <strong>Supabase:</strong> Database hosting
+              <strong>Sediul social:</strong> [Adresa completă]
             </li>
             <li>
-              <strong>Google Gemini AI:</strong> AI features (data not retained)
-            </li>
-            <li>
-              <strong>Background check providers:</strong> For verification (with consent)
+              <strong>Email DPO:</strong> dpo@juniorhub.ro
             </li>
           </ul>
 
-          <h3>4.3 Legal Requirements</h3>
-          <p>We may disclose your information if required by:</p>
+          <p>Această politică respectă:</p>
           <ul>
-            <li>Romanian or EU law</li>
-            <li>Legal process or government request</li>
-            <li>Protection of rights, property, or safety</li>
-            <li>Prevention of fraud or security issues</li>
+            <li>Regulamentul General privind Protecția Datelor (UE) 2016/679 (GDPR)</li>
+            <li>Legea nr. 190/2018 privind protecția datelor cu caracter personal</li>
+            <li>
+              Legea nr. 506/2004 privind prelucrarea datelor cu caracter personal și protecția
+              vieții private în sectorul comunicațiilor electronice
+            </li>
           </ul>
 
-          <h2>5. Your Rights (GDPR)</h2>
+          <h2>2. Datele pe care le colectăm</h2>
 
-          <p>Under Romanian and EU law, you have the right to:</p>
+          <h3>2.1 Date furnizate de dumneavoastră</h3>
+          <ul>
+            <li>
+              <strong>Date de cont:</strong> Nume, adresă de email, parolă, număr de telefon
+            </li>
+            <li>
+              <strong>Date de profil:</strong> Avatar, biografie, locație, limbi vorbite
+            </li>
+            <li>
+              <strong>Anunțuri de servicii:</strong> Descrieri, bugete, locații
+            </li>
+            <li>
+              <strong>Mesaje:</strong> Comunicări cu alți utilizatori prin chat-ul intern
+            </li>
+            <li>
+              <strong>Documente de verificare:</strong> Act de identitate (pentru furnizori),
+              încărcat prin Cloudinary
+            </li>
+            <li>
+              <strong>Recenzii și evaluări:</strong> Feedback public despre servicii
+            </li>
+            <li>
+              <strong>Fotografii:</strong> Imagini de profil, fotografii produse (haine copii,
+              mâncare)
+            </li>
+          </ul>
 
-          <h3>5.1 Access (Article 15)</h3>
-          <p>Request a copy of your personal data we hold.</p>
+          <h3>2.2 Date colectate automat</h3>
+          <ul>
+            <li>
+              <strong>Date de utilizare:</strong> Pagini vizitate, funcționalități utilizate, timp
+              petrecut
+            </li>
+            <li>
+              <strong>Date despre dispozitiv:</strong> Adresă IP, tip browser, tip dispozitiv
+            </li>
+            <li>
+              <strong>Date de localizare:</strong> Locație aproximativă pentru potrivirea
+              serviciilor
+            </li>
+            <li>
+              <strong>Token notificări push:</strong> Firebase Cloud Messaging token
+            </li>
+            <li>
+              <strong>Cookie-uri:</strong> Cookie-uri de sesiune, preferințe (vezi{' '}
+              <Link href="/cookies" className="text-primary underline">
+                Politica Cookie-uri
+              </Link>
+              )
+            </li>
+          </ul>
 
-          <h3>5.2 Rectification (Article 16)</h3>
-          <p>Correct inaccurate or incomplete data.</p>
+          <h2>3. Cum utilizăm datele dumneavoastră</h2>
 
-          <h3>5.3 Erasure (Article 17)</h3>
-          <p>Request deletion of your data ("right to be forgotten").</p>
+          <h3>Temeiuri juridice pentru prelucrare (Articolul 6 GDPR)</h3>
+          <ul>
+            <li>
+              <strong>Executarea contractului (Art. 6(1)(b)):</strong> Crearea contului, potrivirea
+              serviciilor, mesagerie, procesarea tranzacțiilor
+            </li>
+            <li>
+              <strong>Consimțământul (Art. 6(1)(a)):</strong> Comunicări de marketing, notificări
+              push, cookie-uri neesențiale, autentificare prin Google/Facebook
+            </li>
+            <li>
+              <strong>Interesul legitim (Art. 6(1)(f)):</strong> Prevenirea fraudei, securitatea
+              platformei, îmbunătățirea serviciului, sistemul de recenzii
+            </li>
+            <li>
+              <strong>Obligație legală (Art. 6(1)(c)):</strong> Conformitate cu legislația fiscală,
+              ANPC, verificarea identității
+            </li>
+          </ul>
 
-          <h3>5.4 Restriction (Article 18)</h3>
-          <p>Request limitation of data processing.</p>
+          <h3>Scopuri specifice</h3>
+          <ul>
+            <li>Furnizarea și menținerea Serviciului</li>
+            <li>Procesarea tranzacțiilor și trimiterea confirmărilor</li>
+            <li>Trimiterea notificărilor despre contul și activitățile dvs.</li>
+            <li>Răspunsul la solicitări și furnizarea suportului</li>
+            <li>Detectarea, prevenirea și abordarea problemelor de fraudă și securitate</li>
+            <li>Îmbunătățirea și personalizarea Serviciului</li>
+            <li>Efectuarea verificărilor furnizorilor</li>
+            <li>Conformitatea cu obligațiile legale</li>
+          </ul>
 
-          <h3>5.5 Portability (Article 20)</h3>
-          <p>Receive your data in a structured, machine-readable format.</p>
+          <h2>4. Partajarea și divulgarea datelor</h2>
 
-          <h3>5.6 Object (Article 21)</h3>
-          <p>Object to processing based on legitimate interests.</p>
-
-          <h3>5.7 Withdraw Consent</h3>
-          <p>Withdraw consent for marketing communications at any time.</p>
-
+          <h3>4.1 Cu alți utilizatori</h3>
           <p>
-            <strong>To exercise your rights, contact:</strong> privacy@localservices.com
+            Informațiile de profil, anunțurile și recenziile dvs. sunt vizibile altor utilizatori.
+            Mesajele directe sunt vizibile doar participanților la conversație.
           </p>
 
-          <h2>6. Data Retention</h2>
-          <p>We retain your data for:</p>
+          <h3>4.2 Furnizori de servicii terți (procesatori de date)</h3>
+          <p>Partajăm date cu terți de încredere:</p>
           <ul>
             <li>
-              <strong>Account Data:</strong> Duration of account plus 30 days after deletion
+              <strong>Firebase (Google):</strong> Autentificare, notificări push — SUA (Clauze
+              Contractuale Standard)
             </li>
             <li>
-              <strong>Transaction Records:</strong> 7 years (Romanian tax law requirement)
+              <strong>Cloudinary:</strong> Stocarea imaginilor și documentelor de verificare
             </li>
             <li>
-              <strong>Verification Documents:</strong> 7 years (legal compliance)
+              <strong>Vercel:</strong> Hosting website
             </li>
             <li>
-              <strong>Messages:</strong> Duration of conversation or until deleted
-            </li>
-            <li>
-              <strong>AI Chat History:</strong> Not stored (processed in real-time only)
-            </li>
-            <li>
-              <strong>Product Scans:</strong> Images deleted immediately after analysis
+              <strong>PostgreSQL (hosting):</strong> Baza de date
             </li>
           </ul>
 
-          <h2>7. Children's Privacy</h2>
-          <h3>7.1 Age Restriction</h3>
-          <p>
-            Our Service is not intended for children under 13. We do not knowingly collect personal
-            information from children under 13. If we learn we have collected data from a child
-            under 13, we will delete it.
-          </p>
-
-          <h3>7.2 Parental Consent</h3>
-          <p>
-            For users aged 13-18, parental consent is required in accordance with Romanian Law
-            272/2004 on the protection of children's rights.
-          </p>
-
-          <h2>8. Data Security</h2>
-          <p>We implement security measures including:</p>
+          <h3>4.3 Cerințe legale</h3>
+          <p>Putem divulga informațiile dvs. dacă este necesar conform:</p>
           <ul>
-            <li>SSL/TLS encryption for data transmission</li>
-            <li>Encrypted storage of sensitive data</li>
-            <li>Regular security audits</li>
-            <li>Access controls and authentication</li>
-            <li>Secure third-party services (SOC 2 compliant)</li>
+            <li>Legislației române sau europene</li>
+            <li>Proceselor legale sau solicitărilor guvernamentale</li>
+            <li>Protecției drepturilor, proprietății sau siguranței</li>
+            <li>Prevenirii fraudei sau problemelor de securitate</li>
           </ul>
 
-          <h2>9. Cookies and Tracking</h2>
-          <h3>9.1 Types of Cookies</h3>
+          <h2>5. Drepturile dumneavoastră (GDPR)</h2>
+
+          <p>Conform legislației române și europene, aveți dreptul la:</p>
+
+          <h3>5.1 Acces (Articolul 15)</h3>
+          <p>Solicitarea unei copii a datelor personale pe care le deținem despre dvs.</p>
+
+          <h3>5.2 Rectificare (Articolul 16)</h3>
+          <p>Corectarea datelor inexacte sau incomplete.</p>
+
+          <h3>5.3 Ștergere (Articolul 17)</h3>
+          <p>Solicitarea ștergerii datelor dvs. (&quot;dreptul de a fi uitat&quot;).</p>
+
+          <h3>5.4 Restricționare (Articolul 18)</h3>
+          <p>Solicitarea limitării prelucrării datelor.</p>
+
+          <h3>5.5 Portabilitate (Articolul 20)</h3>
+          <p>
+            Primirea datelor într-un format structurat, utilizat frecvent și care poate fi citit
+            automat (JSON).
+          </p>
+
+          <h3>5.6 Opoziție (Articolul 21)</h3>
+          <p>Opoziția la prelucrarea bazată pe interese legitime.</p>
+
+          <h3>5.7 Retragerea consimțământului</h3>
+          <p>
+            Retragerea consimțământului pentru comunicări de marketing, notificări push sau
+            cookie-uri neesențiale în orice moment, fără a afecta legalitatea prelucrării
+            anterioare.
+          </p>
+
+          <p>
+            <strong>Pentru a vă exercita drepturile, contactați:</strong> dpo@juniorhub.ro
+          </p>
+          <p>
+            Vom răspunde solicitării dvs. în termen de <strong>30 de zile calendaristice</strong>.
+          </p>
+
+          <h2>6. Păstrarea datelor</h2>
+          <p>Păstrăm datele dvs. pentru:</p>
           <ul>
             <li>
-              <strong>Essential Cookies:</strong> Required for platform functionality
+              <strong>Date de cont:</strong> Pe durata existenței contului + 3 ani după ștergere
+              (termen de prescripție din dreptul comercial)
             </li>
             <li>
-              <strong>Preference Cookies:</strong> Remember your settings
+              <strong>Înregistrări fiscale:</strong> 10 ani (conform Codului Fiscal)
             </li>
             <li>
-              <strong>Analytics Cookies:</strong> Understand usage patterns (with consent)
+              <strong>Documente de verificare:</strong> Pe durata statutului de furnizor + 5 ani
+            </li>
+            <li>
+              <strong>Mesaje:</strong> Pe durata existenței contului + 1 an
+            </li>
+            <li>
+              <strong>Loguri tehnice:</strong> 6 luni
             </li>
           </ul>
 
-          <h3>9.2 Cookie Consent</h3>
+          <h2>7. Protecția minorilor</h2>
+          <h3>7.1 Restricție de vârstă</h3>
           <p>
-            In compliance with Romanian Law 506/2004 and ePrivacy Directive, we request your consent
-            for non-essential cookies.
+            Conform Legii nr. 190/2018, vârsta minimă pentru consimțământul digital în România este
+            de 16 ani. Nu colectăm cu bună știință date personale de la persoane sub 16 ani. Dacă
+            aflăm că am colectat date de la o persoană sub 16 ani, le vom șterge.
           </p>
 
-          <h2>10. International Data Transfers</h2>
+          <h3>7.2 Fotografii cu copii</h3>
           <p>
-            Your data may be transferred to and processed in countries outside the European Economic
-            Area (EEA). We ensure adequate protection through:
+            Deoarece platforma include funcționalități legate de copii (evenimente, haine),
+            responsabilitatea publicării fotografiilor cu minori revine exclusiv părintelui sau
+            tutorelui legal. JuniorHub nu utilizează aceste imagini în scopuri de marketing fără
+            consimțământ explicit.
           </p>
+
+          <h3>7.3 Date colectate pentru înregistrarea la evenimente</h3>
+          <p>
+            Pentru înregistrarea copiilor la evenimente, colectăm următoarele date: numele
+            copilului, vârsta și eventuale cerințe speciale (alergii, nevoi medicale). Baza legală:
+            consimțământul părintelui/tutorelui (Art. 8 GDPR, Legea 190/2018 Art. 8).
+          </p>
+          <p>
+            Aceste date sunt păstrate pe durata evenimentului și 30 de zile după finalizarea
+            acestuia, apoi sunt șterse automat. Părintele/tutorele poate solicita oricând accesul,
+            rectificarea sau ștergerea datelor copilului contactându-ne la adresa de email indicată
+            mai sus.
+          </p>
+
+          <h2>8. Securitatea datelor</h2>
+          <p>Implementăm măsuri de securitate, inclusiv:</p>
           <ul>
-            <li>Standard Contractual Clauses (EU-approved)</li>
-            <li>Services certified under EU-US Data Privacy Framework</li>
-            <li>Adequacy decisions by the European Commission</li>
+            <li>Criptare SSL/TLS pentru transmiterea datelor</li>
+            <li>Stocarea criptată a datelor sensibile</li>
+            <li>Audituri de securitate periodice</li>
+            <li>Controale de acces și autentificare</li>
+            <li>Servicii terțe securizate (conforme SOC 2)</li>
           </ul>
 
-          <h2>11. Data Breach Notification</h2>
-          <p>In accordance with GDPR Article 33 and Romanian Law 190/2018, we will notify:</p>
+          <h2>9. Cookie-uri și urmărire</h2>
+          <p>
+            Utilizăm cookie-uri în conformitate cu Legea nr. 506/2004 și Directiva ePrivacy. Pentru
+            detalii complete despre cookie-urile utilizate și cum le puteți controla, consultați{' '}
+            <Link href="/cookies" className="text-primary underline">
+              Politica privind Cookie-urile
+            </Link>
+            .
+          </p>
+
+          <h2>10. Transferuri internaționale de date</h2>
+          <p>
+            Datele dvs. pot fi transferate și prelucrate în țări din afara Spațiului Economic
+            European (SEE), în special SUA (Firebase/Google, Cloudinary). Asigurăm protecție
+            adecvată prin:
+          </p>
+          <ul>
+            <li>Clauze Contractuale Standard (aprobate de UE)</li>
+            <li>Servicii certificate în cadrul EU-US Data Privacy Framework</li>
+            <li>Decizii de adecvare ale Comisiei Europene</li>
+          </ul>
+
+          <h2>11. Notificarea în caz de încălcare a securității datelor</h2>
+          <p>În conformitate cu Articolul 33 GDPR și Legea nr. 190/2018, vom notifica:</p>
           <ul>
             <li>
-              <strong>Supervisory Authority (ANSPDCP):</strong> Within 72 hours of becoming aware
+              <strong>Autoritatea de supraveghere (ANSPDCP):</strong> În termen de 72 de ore de la
+              conștientizare
             </li>
             <li>
-              <strong>Affected Users:</strong> Without undue delay if high risk to rights and
-              freedoms
+              <strong>Utilizatorii afectați:</strong> Fără întârzieri nejustificate, dacă există
+              risc ridicat pentru drepturile și libertățile persoanelor
             </li>
           </ul>
 
-          <h2>12. Third-Party Links</h2>
+          <h2>12. Linkuri către terți</h2>
           <p>
-            Our Service may contain links to third-party websites. We are not responsible for their
-            privacy practices. We encourage you to review their privacy policies.
+            Serviciul nostru poate conține linkuri către site-uri terțe. Nu suntem responsabili
+            pentru practicile lor de confidențialitate. Vă încurajăm să le revizuiți politicile de
+            confidențialitate.
           </p>
 
-          <h2>13. Changes to Privacy Policy</h2>
+          <h2>13. Modificări ale Politicii de Confidențialitate</h2>
           <p>
-            We may update this Privacy Policy periodically. We will notify you of material changes
-            via:
+            Putem actualiza periodic această Politică. Vă vom notifica cu privire la modificări
+            semnificative prin:
           </p>
           <ul>
-            <li>Email notification</li>
-            <li>Platform notification</li>
-            <li>Updated "Last modified" date</li>
+            <li>Notificare prin email</li>
+            <li>Notificare pe platformă</li>
+            <li>Actualizarea datei &quot;Ultima actualizare&quot;</li>
           </ul>
 
-          <h2>14. Contact and Complaints</h2>
+          <h2>14. Contact și reclamații</h2>
 
-          <h3>14.1 Data Protection Officer</h3>
+          <h3>14.1 Responsabilul cu Protecția Datelor (DPO)</h3>
           <p>
-            Email: dpo@localservices.com
+            Email: dpo@juniorhub.ro
             <br />
-            Address: [Your Romanian Business Address]
+            Adresă: [Adresa completă]
           </p>
 
-          <h3>14.2 Supervisory Authority</h3>
-          <p>You have the right to lodge a complaint with the Romanian supervisory authority:</p>
+          <h3>14.2 Autoritatea de supraveghere</h3>
+          <p>Aveți dreptul de a depune o plângere la autoritatea română de supraveghere:</p>
           <p>
             <strong>
               ANSPDCP (Autoritatea Națională de Supraveghere a Prelucrării Datelor cu Caracter
               Personal)
             </strong>
             <br />
-            Address: B-dul G-ral. Gheorghe Magheru 28-30, Sector 1, București
+            Adresă: B-dul G-ral. Gheorghe Magheru 28-30, Sector 1, București
             <br />
-            Phone: +40 21 252 5599
+            Telefon: +40 21 252 5599
             <br />
-            Website: www.dataprotection.ro
+            Website:{' '}
+            <a
+              href="https://www.dataprotection.ro"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline"
+            >
+              www.dataprotection.ro
+            </a>
             <br />
             Email: anspdcp@dataprotection.ro
           </p>
 
-          <h2>15. Definitions</h2>
+          <h2>15. Definiții</h2>
           <ul>
             <li>
-              <strong>Personal Data:</strong> Information relating to an identified or identifiable
-              person
+              <strong>Date cu caracter personal:</strong> Informații referitoare la o persoană
+              fizică identificată sau identificabilă
             </li>
             <li>
-              <strong>Processing:</strong> Any operation performed on personal data
+              <strong>Prelucrare:</strong> Orice operațiune efectuată asupra datelor cu caracter
+              personal
             </li>
             <li>
-              <strong>Controller:</strong> JuniorHub (determines purposes and means of processing)
+              <strong>Operator:</strong> JuniorHub SRL (stabilește scopurile și mijloacele de
+              prelucrare)
             </li>
             <li>
-              <strong>Processor:</strong> Third parties processing data on our behalf
+              <strong>Persoană împuternicită:</strong> Terți care prelucrează datele în numele
+              nostru
             </li>
           </ul>
 
-          <h2>16. Your Choices</h2>
-          <h3>16.1 Marketing Communications</h3>
-          <p>Opt out of marketing emails via unsubscribe link or account settings.</p>
-
-          <h3>16.2 Location Services</h3>
-          <p>Disable location access in browser or device settings (may limit functionality).</p>
-
-          <h3>16.3 Account Deletion</h3>
+          <h2>16. Opțiunile dumneavoastră</h2>
+          <h3>16.1 Comunicări de marketing</h3>
           <p>
-            Request account deletion via Settings → Delete Account. Data will be permanently removed
-            within 30 days, except where retention is required by law.
+            Dezabonați-vă de la emailurile de marketing prin linkul de dezabonare sau setările
+            contului.
+          </p>
+
+          <h3>16.2 Servicii de localizare</h3>
+          <p>
+            Dezactivați accesul la locație în setările browserului sau dispozitivului (poate limita
+            funcționalitatea).
+          </p>
+
+          <h3>16.3 Ștergerea contului</h3>
+          <p>
+            Solicitați ștergerea contului prin Setări → Șterge contul. Datele vor fi eliminate
+            permanent în termen de 30 de zile, cu excepția cazurilor în care păstrarea este
+            obligatorie prin lege.
           </p>
 
           <hr />
 
           <p className="text-muted-foreground text-sm">
-            <strong>Note:</strong> This Privacy Policy complies with Romanian and EU regulations as
-            of the last updated date. Users should review periodically for changes.
+            Consultați și{' '}
+            <Link href="/terms" className="text-primary underline">
+              Termenii și Condițiile
+            </Link>
+            ,{' '}
+            <Link href="/cookies" className="text-primary underline">
+              Politica Cookie-uri
+            </Link>{' '}
+            și{' '}
+            <Link href="/anpc" className="text-primary underline">
+              Protecția Consumatorilor
+            </Link>
+            .
           </p>
         </Card>
       </div>

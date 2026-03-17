@@ -24,6 +24,7 @@ import { Card } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
+import { useTranslation } from '@/hooks/use-translation';
 import { getIdToken } from '@/lib/firebase';
 import { toast } from 'sonner';
 
@@ -32,6 +33,7 @@ export default function ClothesItemDetailPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -62,12 +64,12 @@ export default function ClothesItemDetailPage() {
       return res.json();
     },
     onSuccess: () => {
-      toast.success('Item deleted successfully');
+      toast.success(t('success.deleted'));
       queryClient.invalidateQueries({ queryKey: ['kids-clothes'] });
       router.push('/kids-clothes');
     },
     onError: () => {
-      toast.error('Failed to delete item');
+      toast.error(t('errors.failedToDelete'));
     },
   });
 
@@ -82,11 +84,11 @@ export default function ClothesItemDetailPage() {
       return res.json();
     },
     onSuccess: () => {
-      toast.success('Item claimed! Contact the seller to arrange pickup.');
+      toast.success(t('success.claimed'));
       queryClient.invalidateQueries({ queryKey: ['clothes-item', itemId] });
     },
     onError: () => {
-      toast.error('Failed to claim item');
+      toast.error(t('errors.failedToUpdate'));
     },
   });
 
@@ -109,7 +111,7 @@ export default function ClothesItemDetailPage() {
       const conversation = await res.json();
       router.push(`/messages/${conversation.id}`);
     } catch {
-      toast.error('Failed to start conversation');
+      toast.error(t('errors.failedToCreate'));
     }
   };
 

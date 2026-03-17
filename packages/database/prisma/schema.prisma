@@ -81,13 +81,15 @@ model User {
   latitude    Float?
   longitude   Float?
   role        UserRole @default(USER)
-  isVerified  Boolean  @default(false)
-  rating      Float    @default(0)
+  isVerified     Boolean  @default(false)
+  emailVerified  Boolean  @default(false)
+  rating         Float    @default(0)
   reviewCount Int      @default(0)
-  locale      String   @default("en")
-  fcmToken    String?  // Firebase Cloud Messaging token for push notifications
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  locale       String   @default("ro")
+  fcmToken     String?  // Firebase Cloud Messaging token for push notifications
+  lastActiveAt DateTime? // For "last seen" indicator
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
   jobsPosted           Job[]                     @relation("JobPoster")
@@ -111,12 +113,21 @@ model User {
   foodOrders           FoodOrder[]               @relation("FoodCustomer")
   verificationRequests VerificationRequest[]     @relation("VerificationUser")
   verificationsReviewed VerificationRequest[]    @relation("VerificationReviewer")
+  consents             Consent[]
+  emailVerifications   EmailVerification[]
+  providerProfile      ProviderProfile?
+  availabilitySlots    AvailabilitySlot[]
+  bookingsAsClient     Booking[]                 @relation("BookingClient")
+  bookingsAsProvider   Booking[]                 @relation("BookingProvider")
+  payments             Payment[]
+  subscriptions        Subscription[]
 
   @@index([firebaseUid])
   @@index([email])
   @@index([latitude, longitude])
   @@index([role])
   @@index([createdAt])
+  @@index([lastActiveAt])
 }
 
 // ===========================================
@@ -131,7 +142,7 @@ model Job {
   jobType     JobType         @default(SERVICE_REQUEST)
   pricingType PricingType     @default(FIXED)
   budget      Decimal?        @db.Decimal(10, 2)
-  currency    String          @default("USD")
+  currency    String          @default("RON")
   status      JobStatus       @default(DRAFT)
   location    String
   latitude    Float
@@ -149,6 +160,7 @@ model Job {
   images          JobImage[]
   offers          Offer[]
   bookingRequests BookingRequest[]
+  bookings        Booking[]
   reviews         Review[]
   conversations   Conversation[]
   promotion       Promotion?
@@ -562,4 +574,244 @@ model VerificationRequest {
   @@index([userId])
   @@index([submittedAt])
   @@index([idnormSessionId])
+}
+
+// ===========================================
+// GDPR Consent Tracking Model
+// ===========================================
+
+enum ConsentType {
+  TERMS_AND_PRIVACY
+  AGE_CONFIRMATION
+  MARKETING
+  COOKIES_FUNCTIONAL
+  COOKIES_ANALYTICS
+  COOKIES_MARKETING
+}
+
+model Consent {
+  id          String      @id @default(cuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        ConsentType
+  version     String      // e.g., "2026-03-15" - date of terms/privacy version
+  granted     Boolean
+  ipAddress   String?
+  userAgent   String?     @db.Text
+  grantedAt   DateTime    @default(now())
+  revokedAt   DateTime?
+
+  @@index([userId, type])
+  @@index([type, granted])
+  @@index([grantedAt])
+}
+
+// ===========================================
+// Email Verification Model
+// ===========================================
+
+model EmailVerification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
+
+// ===========================================
+// Audit Log Model (GDPR compliance)
+// ===========================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String
+  action     String   // e.g., "user.delete", "verification.approve", "consent.grant"
+  targetType String   // e.g., "User", "Job", "Review"
+  targetId   String
+  metadata   Json     @default("{}")
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([targetType, targetId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// ===========================================
+// Provider Profile Model (extended provider data)
+// ===========================================
+
+model ProviderProfile {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  headline          String?  // "Bona cu experienta, 5+ ani"
+  yearsExperience   Int?
+  hourlyRate        Decimal? @db.Decimal(10, 2)
+  currency          String   @default("RON")
+  languages         String[] // ["ro", "en", "hu", "de"]
+  certifications    String[] // ["first_aid", "cpr", "pedagogy"]
+  ageRangeMin       Int?     // Minimum child age comfortable with
+  ageRangeMax       Int?     // Maximum child age
+  maxChildren       Int?     // Max number of children at once
+  hasCar            Boolean  @default(false)
+  hasDriverLicense  Boolean  @default(false)
+  serviceRadius     Int?     // km from home location
+  specialNeeds      Boolean  @default(false) // Experience with special needs children
+  smokingStatus     String?  // "non_smoker", "smoker"
+  petsOk            Boolean  @default(true)
+  videoIntroUrl     String?
+  photos            String[] // Additional profile photos beyond avatar
+  responseTimeMin   Int?     // Average response time in minutes (calculated)
+  responseRate      Float?   // Percentage of messages responded to (calculated)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([hourlyRate])
+  @@index([yearsExperience])
+  @@index([serviceRadius])
+}
+
+// ===========================================
+// Availability Slot Model
+// ===========================================
+
+model AvailabilitySlot {
+  id           String    @id @default(cuid())
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dayOfWeek    Int?      // 0=Sun..6=Sat, null for one-off dates
+  startTime    String    // "08:00" (HH:mm)
+  endTime      String    // "18:00" (HH:mm)
+  specificDate DateTime? // For one-off availability; null = recurring weekly
+  isAvailable  Boolean   @default(true) // false = blocked out
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId, dayOfWeek])
+  @@index([userId, specificDate])
+  @@index([isAvailable])
+}
+
+// ===========================================
+// Booking Model (proper booking system)
+// ===========================================
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED_BY_CLIENT
+  CANCELLED_BY_PROVIDER
+  NO_SHOW
+}
+
+model Booking {
+  id                String        @id @default(cuid())
+  jobId             String
+  job               Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  clientId          String
+  client            User          @relation("BookingClient", fields: [clientId], references: [id], onDelete: Cascade)
+  providerId        String
+  provider          User          @relation("BookingProvider", fields: [providerId], references: [id], onDelete: Cascade)
+  startDateTime     DateTime
+  endDateTime       DateTime
+  duration          Int           // minutes
+  status            BookingStatus @default(PENDING)
+  totalPrice        Decimal       @db.Decimal(10, 2)
+  currency          String        @default("RON")
+  notes             String?       @db.Text
+  cancellationReason String?      @db.Text
+  cancelledAt       DateTime?
+  confirmedAt       DateTime?
+  completedAt       DateTime?
+  paymentId         String?       @unique
+  payment           Payment?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  @@index([clientId, status])
+  @@index([providerId, status])
+  @@index([startDateTime])
+  @@index([status])
+  @@index([jobId])
+}
+
+// ===========================================
+// Payment Model
+// ===========================================
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+model Payment {
+  id             String        @id @default(cuid())
+  bookingId      String?       @unique
+  booking        Booking?      @relation(fields: [bookingId], references: [id])
+  userId         String
+  user           User          @relation(fields: [userId], references: [id])
+  amount         Decimal       @db.Decimal(10, 2)
+  currency       String        @default("RON")
+  status         PaymentStatus @default(PENDING)
+  provider       String        // "stripe", "netopia"
+  externalId     String?       @unique // Stripe PaymentIntent ID etc.
+  metadata       Json          @default("{}")
+  failureReason  String?
+  refundedAmount Decimal?      @db.Decimal(10, 2)
+  paidAt         DateTime?
+  refundedAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([userId, status])
+  @@index([externalId])
+  @@index([status])
+}
+
+// ===========================================
+// Subscription Model (premium tiers)
+// ===========================================
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PREMIUM
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELLED
+  EXPIRED
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  userId             String
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan               SubscriptionPlan   @default(FREE)
+  status             SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime
+  currentPeriodEnd   DateTime
+  cancelledAt        DateTime?
+  externalId         String?            @unique // Stripe subscription ID
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  @@index([userId, status])
+  @@index([currentPeriodEnd])
+  @@index([status])
 }

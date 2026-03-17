@@ -80,7 +80,7 @@ export default function FoodDetailPage() {
       }
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to place order');
+      toast.error(error.message || t('errors.failedToCreate'));
     },
   });
 

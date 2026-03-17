@@ -25,6 +25,7 @@ import { Card } from '@/components/ui/card';
 import { Avatar } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/use-auth';
+import { useTranslation } from '@/hooks/use-translation';
 import { getIdToken } from '@/lib/firebase';
 import { toast } from 'sonner';
 
@@ -33,6 +34,7 @@ export default function EventDetailPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const eventId = params.id as string;
@@ -62,12 +64,12 @@ export default function EventDetailPage() {
       return res.json();
     },
     onSuccess: () => {
-      toast.success('Event deleted successfully');
+      toast.success(t('success.deleted'));
       queryClient.invalidateQueries({ queryKey: ['kids-events'] });
       router.push('/kids-events');
     },
     onError: () => {
-      toast.error('Failed to delete event');
+      toast.error(t('errors.failedToDelete'));
     },
   });
 
@@ -86,11 +88,11 @@ export default function EventDetailPage() {
       return res.json();
     },
     onSuccess: () => {
-      toast.success('Successfully registered for event!');
+      toast.success(t('success.registered'));
       queryClient.invalidateQueries({ queryKey: ['kids-event', eventId] });
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Failed to register');
+      toast.error(error.message || t('errors.failedToRegister'));
     },
   });
 
@@ -105,11 +107,11 @@ export default function EventDetailPage() {
       return res.json();
     },
     onSuccess: () => {
-      toast.success('Registration cancelled');
+      toast.success(t('success.registrationCancelled'));
       queryClient.invalidateQueries({ queryKey: ['kids-event', eventId] });
     },
     onError: () => {
-      toast.error('Failed to cancel registration');
+      toast.error(t('errors.failedToUpdate'));
     },
   });
 
@@ -120,7 +122,7 @@ export default function EventDetailPage() {
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     if (!childName || !childAge) {
-      toast.error('Please fill in all fields');
+      toast.error(t('errors.fillAllFields'));
       return;
     }
     registerMutation.mutate({ childName, childAge: parseInt(childAge) });
@@ -148,7 +150,7 @@ export default function EventDetailPage() {
       const conversation = await res.json();
       router.push(`/messages/${conversation.id}`);
     } catch {
-      toast.error('Failed to start conversation');
+      toast.error(t('errors.failedToCreate'));
     }
   };
 

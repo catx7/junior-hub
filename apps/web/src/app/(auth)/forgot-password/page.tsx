@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       setIsSubmitted(true);
     } catch (error) {
-      alert('Failed to send reset email. Please try again.');
+      alert('Nu am putut trimite emailul de resetare. Vă rugăm încercați din nou.');
     } finally {
       setIsLoading(false);
     }

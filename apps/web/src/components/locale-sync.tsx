@@ -1,0 +1,14 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useLocaleStore } from '@/stores/locale-store';
+
+export function LocaleSync() {
+  const locale = useLocaleStore((s) => s.locale);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
+  return null;
+}
